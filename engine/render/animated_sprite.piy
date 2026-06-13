@@ -1,0 +1,80 @@
+class AnimatedSprite:
+    extends Sprite
+    var _frames: array = []
+    var _frame_rate: int = 12
+    var _current_frame: int = 0
+    var _elapsed: float = 0.0
+    var _playing: bool = false
+    var _loop: bool = true
+    var _animations: dict = {}
+    var _current_anim: string = ""
+
+    fn init(name: string)
+        _name = name
+
+    fn add_frame(tex: string)
+        _frames.append({texture: tex, duration: 1.0 / float(_frame_rate)})
+
+    fn add_animation(name: string, frames: array, fps: int, loop: bool)
+        _animations[name] = {frames: frames, fps: fps, loop: loop}
+
+    fn play(anim_name: string)
+        if _animations.has(anim_name):
+            _current_anim = anim_name
+            _current_frame = 0
+            _elapsed = 0.0
+            _playing = true
+            var anim = _animations[anim_name]
+            _loop = anim.loop
+
+    fn stop()
+        _playing = false
+
+    fn pause()
+        _playing = false
+
+    fn resume()
+        _playing = true
+
+    fn is_playing() -> bool
+        return _playing
+
+    fn set_frame_rate(fps: int)
+        _frame_rate = fps
+
+    fn get_frame_count() -> int
+        if _current_anim != "" and _animations.has(_current_anim):
+            return len(_animations[_current_anim].frames)
+        return len(_frames)
+
+    fn set_frame(idx: int)
+        _current_frame = idx
+
+    fn _on_update(dt: float)
+        if not _playing:
+            return
+        _elapsed += dt
+        var anim = null
+        if _current_anim != "" and _animations.has(_current_anim):
+            anim = _animations[_current_anim]
+        var fps = _frame_rate
+        var total = len(_frames)
+        if anim != null:
+            fps = anim.fps
+            total = len(anim.frames)
+        if total == 0:
+            return
+        var frame_dur = 1.0 / float(fps)
+        if _elapsed >= frame_dur:
+            _elapsed = _elapsed - frame_dur
+            _current_frame += 1
+            if _current_frame >= total:
+                if _loop:
+                    _current_frame = 0
+                else:
+                    _current_frame = total - 1
+                    _playing = false
+        if anim != null and _current_frame < len(anim.frames):
+            _texture = anim.frames[_current_frame]
+        elif _current_frame < len(_frames):
+            _texture = _frames[_current_frame].texture

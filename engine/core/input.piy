@@ -1,0 +1,70 @@
+class InputManager:
+    var _keys: dict = {}
+    var _prev_keys: dict = {}
+    var _mouse: dict = {x: 0, y: 0}
+    var _prev_mouse: dict = {x: 0, y: 0}
+    var _mouse_buttons: dict = {}
+    var _prev_mouse_buttons: dict = {}
+    var _mouse_wheel: int = 0
+
+    fn init()
+        pass
+
+    fn poll()
+        _prev_keys = {}
+        for k in _keys:
+            _prev_keys[k] = _keys[k]
+        _prev_mouse = {x: _mouse.x, y: _mouse.y}
+        _prev_mouse_buttons = {}
+        for k in _mouse_buttons:
+            _prev_mouse_buttons[k] = _mouse_buttons[k]
+        _mouse_wheel = 0
+
+    fn key_down(key: string) -> bool
+        return _keys.get(key, false)
+
+    fn key_pressed(key: string) -> bool
+        return _keys.get(key, false) and not _prev_keys.get(key, false)
+
+    fn key_released(key: string) -> bool
+        return not _keys.get(key, false) and _prev_keys.get(key, false)
+
+    fn mouse_down(button: int) -> bool
+        return _mouse_buttons.get(button, false)
+
+    fn mouse_pressed(button: int) -> bool
+        return _mouse_buttons.get(button, false) and not _prev_mouse_buttons.get(button, false)
+
+    fn mouse_released(button: int) -> bool
+        return not _mouse_buttons.get(button, false) and _prev_mouse_buttons.get(button, false)
+
+    fn get_mouse_x() -> int
+        return _mouse.x
+
+    fn get_mouse_y() -> int
+        return _mouse.y
+
+    fn get_mouse_position() -> dict
+        return {x: _mouse.x, y: _mouse.y}
+
+    fn get_mouse_wheel() -> int
+        return _mouse_wheel
+
+    fn _on_key_down(key: string)
+        _keys[key] = true
+
+    fn _on_key_up(key: string)
+        _keys[key] = false
+
+    fn _on_mouse_button_down(button: int)
+        _mouse_buttons[button] = true
+
+    fn _on_mouse_button_up(button: int)
+        _mouse_buttons[button] = false
+
+    fn _on_mouse_move(x: int, y: int)
+        _mouse.x = x
+        _mouse.y = y
+
+    fn _on_mouse_scroll(delta: int)
+        _mouse_wheel = delta

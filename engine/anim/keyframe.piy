@@ -1,0 +1,220 @@
+class Keyframe:
+    var _time: float = 0.0
+    var _value: float = 0.0
+    var _easing: string = "linear"
+
+    fn init(time: float, value: float, easing: string)
+        _time = time
+        _value = value
+        _easing = easing
+
+    fn get_time() -> float
+        return _time
+
+    fn get_value() -> float
+        return _value
+
+    fn get_easing() -> string
+        return _easing
+
+
+class KeyframeTrack:
+    var _property: string = ""
+    var _keyframes: array = []
+    var _loop: bool = false
+
+    fn init(prop: string)
+        _property = prop
+
+    fn add_keyframe(time: float, value: float, easing: string)
+        var kf = Keyframe.new(time, value, easing)
+        _keyframes.append(kf)
+        _keyframes.sort(fn(a, b): return a._time < b._time)
+
+    fn get_property() -> string
+        return _property
+
+    fn get_keyframe_count() -> int
+        return len(_keyframes)
+
+    fn evaluate(time: float) -> float
+        if len(_keyframes) == 0:
+            return 0.0
+        if len(_keyframes) == 1:
+            return _keyframes[0]._value
+        if time <= _keyframes[0]._time:
+            return _keyframes[0]._value
+        if time >= _keyframes[len(_keyframes) - 1]._time:
+            return _keyframes[len(_keyframes) - 1]._value
+        var i = 0
+        while i < len(_keyframes) - 1:
+            var kf0 = _keyframes[i]
+            var kf1 = _keyframes[i + 1]
+            if time >= kf0._time and time <= kf1._time:
+                var t = (time - kf0._time) / (kf1._time - kf0._time)
+                var eased_t = _apply_easing(t, kf0._easing)
+                return kf0._value + (kf1._value - kf0._value) * eased_t
+            i += 1
+        return _keyframes[len(_keyframes) - 1]._value
+
+    fn _apply_easing(t: float, easing: string) -> float
+        if easing == "linear":
+            return t
+        elif easing == "easeInQuad":
+            return t * t
+        elif easing == "easeOutQuad":
+            return t * (2.0 - t)
+        elif easing == "easeInOutQuad":
+            if t < 0.5:
+                return 2.0 * t * t
+            else:
+                return -1.0 + (4.0 - 2.0 * t) * t
+        elif easing == "easeInCubic":
+            return t * t * t
+        elif easing == "easeOutCubic":
+            var t2 = t - 1.0
+            return t2 * t2 * t2 + 1.0
+        elif easing == "easeInOutCubic":
+            if t < 0.5:
+                return 4.0 * t * t * t
+            else:
+                var t2 = t - 1.0
+                return 4.0 * t2 * t2 * t2 + 1.0
+        return t
+
+
+class AnimationClip:
+    var _name: string = ""
+    var _tracks: array = []
+    var _duration: float = 0.0
+    var _loop: bool = false
+    var _playing: bool = false
+    var _elapsed: float = 0.0
+    var _speed: float = 1.0
+    var _on_complete = null
+
+    fn init(name: string)
+        _name = name
+
+    fn add_track(track: KeyframeTrack)
+        _tracks.append(track)
+        if len(track._keyframes) > 0:
+            var last = track._keyframes[len(track._keyframes) - 1]
+            if last._time > _duration:
+                _duration = last._time
+
+    fn get_name() -> string
+        return _name
+
+    fn get_duration() -> float
+        return _duration
+
+    fn set_loop(val: bool)
+        _loop = val
+
+    fn set_speed(s: float)
+        _speed = s
+
+    fn play()
+        _elapsed = 0.0
+        _playing = true
+
+    fn stop()
+        _playing = false
+
+    fn pause()
+        _playing = false
+
+    fn resume()
+        _playing = true
+
+    fn is_playing() -> bool
+        return _playing
+
+    fn set_on_complete(callback)
+        _on_complete = callback
+
+    fn update(dt: float, target)
+        if not _playing:
+            return
+        _elapsed = _elapsed + dt * _speed
+        if _elapsed >= _duration:
+            if _loop:
+                _elapsed = _elapsed - _duration
+            else:
+                _playing = false
+                _elapsed = _duration
+                if _on_complete != null:
+                    _on_complete.call()
+                return
+        for track in _tracks:
+            var val = track.evaluate(_elapsed)
+            _set_property(target, track._property, val)
+
+    fn _set_property(target, prop: string, val: float)
+        if prop == "x":
+            target._x = val
+        elif prop == "y":
+            target._y = val
+        elif prop == "width":
+            target._width = val
+        elif prop == "height":
+            target._height = val
+        elif prop == "alpha":
+            target._a = int(val)
+        elif prop == "rotation":
+            target._rotation = val
+        elif prop == "scaleX":
+            target._scale_x = val
+        elif prop == "scaleY":
+            target._scale_y = val
+        elif prop == "r":
+            target._r = int(val)
+        elif prop == "g":
+            target._g = int(val)
+        elif prop == "b":
+            target._b = int(val)
+
+
+class AnimationPlayer:
+    var _clips: dict = {}
+    var _current: string = ""
+    var _target = null
+
+    fn init(target)
+        _target = target
+
+    fn add_clip(clip: AnimationClip)
+        _clips[clip._name] = clip
+
+    fn play(clip_name: string)
+        if _clips.has(clip_name):
+            if _current != "" and _clips.has(_current):
+                _clips[_current].stop()
+            _current = clip_name
+            _clips[clip_name].play()
+
+    fn stop()
+        if _current != "" and _clips.has(_current):
+            _clips[_current].stop()
+        _current = ""
+
+    fn pause()
+        if _current != "" and _clips.has(_current):
+            _clips[_current].pause()
+
+    fn resume()
+        if _current != "" and _clips.has(_current):
+            _clips[_current].resume()
+
+    fn get_current() -> string
+        return _current
+
+    fn is_playing() -> bool
+        if _current != "" and _clips.has(_current):
+            return _clips[_current].is_playing()
+        return false
+
+    fn update(dt: float)
+        if _current != "" and _clips.has(_current):
+            _clips[_current].update(dt, _target)

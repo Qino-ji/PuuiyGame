@@ -1,0 +1,173 @@
+import "engine/core/game.piy"
+import "engine/core/scene.piy"
+import "engine/render/renderer.piy"
+import "engine/render/label.piy"
+import "engine/ecs/entity.piy"
+import "engine/ecs/component.piy"
+import "engine/ecs/system.piy"
+import "engine/ecs/world.piy"
+import "engine/ecs/systems.piy"
+import "engine/ui/ui_node.piy"
+import "engine/ui/widgets.piy"
+import "engine/ui/css_engine.piy"
+import "engine/core/input.piy"
+
+class BulletMoveSystem:
+    extends System
+
+    fn init()
+        _priority = 10
+
+    fn update(world, dt: float)
+        var entities = world.get_entities_with(Transform)
+        for e in entities:
+            if e.has_tag("bullet"):
+                var t = e.get_component(Transform)
+                t.y = t.y - 300.0 * dt
+                if t.y < -50:
+                    world.destroy_entity(e)
+
+class BulletSpawnSystem:
+    extends System
+    var _spawn_timer: float = 0.0
+    var _spawn_rate: float = 0.15
+
+    fn init()
+        _priority = 5
+
+    fn update(world, dt: float)
+        _spawn_timer = _spawn_timer + dt
+        if _spawn_timer >= _spawn_rate:
+            _spawn_timer = 0.0
+            var bullet = world.create_entity()
+            bullet.add_tag("bullet")
+            var t = Transform.new()
+            t.set_position(400.0 + float(int(random() * 200) - 100), 30.0)
+            bullet.add_component(t)
+            var sr = SpriteRenderer.new()
+            sr.texture = "bullet"
+            sr.width = 4.0
+            sr.height = 12.0
+            sr.r = 255
+            sr.g = 255
+            sr.b = 0
+            bullet.add_component(sr)
+
+class EnemySpawnSystem:
+    extends System
+    var _spawn_timer: float = 0.0
+    var _spawn_rate: float = 1.0
+
+    fn init()
+        _priority = 5
+
+    fn update(world, dt: float)
+        _spawn_timer = _spawn_timer + dt
+        if _spawn_timer >= _spawn_rate:
+            _spawn_timer = 0.0
+            var enemy = world.create_entity()
+            enemy.add_tag("enemy")
+            var t = Transform.new()
+            t.set_position(50.0 + float(int(random() * 700)), 0.0)
+            enemy.add_component(t)
+            var v = Velocity.new()
+            v.set(0, 80.0)
+            enemy.add_component(v)
+            var sr = SpriteRenderer.new()
+            sr.texture = "enemy"
+            sr.width = 28.0
+            sr.height = 28.0
+            sr.r = 255
+            sr.g = 50
+            sr.b = 50
+            enemy.add_component(sr)
+            var hp = Health.new()
+            hp.current = 20
+            hp.maximum = 20
+            enemy.add_component(hp)
+
+class ECSDemoScene:
+    extends Scene
+    var _world: World
+    var _score: int = 0
+    var _score_label = null
+    var _enemy_count_label = null
+    var _player_x: float = 400.0
+
+    fn init()
+        _name = "ecs_demo"
+        _world = World.new()
+        add_layer("main", 1)
+        add_layer("ui", 10)
+
+    fn enter()
+        _world.add_system(BulletSpawnSystem.new())
+        _world.add_system(EnemySpawnSystem.new())
+        _world.add_system(BulletMoveSystem.new())
+        _world.add_system(MovementSystem.new())
+        _world.add_system(SpriteRenderSystem.new())
+
+        _score_label = Label.new("score_lbl")
+        _score_label.set_text("Score: 0")
+        _score_label.set_position(10, 10)
+        _score_label.set_size(20)
+        _score_label.set_color(255, 255, 255)
+        add_to_layer("ui", _score_label)
+
+        _enemy_count_label = Label.new("enemy_lbl")
+        _enemy_count_label.set_text("Enemies: 0")
+        _enemy_count_label.set_position(10, 35)
+        _enemy_count_label.set_size(16)
+        _enemy_count_label.set_color(200, 200, 200)
+        add_to_layer("ui", _enemy_count_label)
+
+    fn update(dt: float)
+        var input = get_game().get_input()
+        if input.key_down("left"):
+            _player_x = _player_x - 250.0 * dt
+        if input.key_down("right"):
+            _player_x = _player_x + 250.0 * dt
+        if _player_x < 0:
+            _player_x = 0
+        if _player_x > 780:
+            _player_x = 780
+        _world.update(dt)
+        var enemies = _world.get_entities_with_tag("enemy")
+        var bullets = _world.get_entities_with_tag("bullet")
+        var i = 0
+        while i < len(bullets):
+            var b = bullets[i]
+            var bt = b.get_component(Transform)
+            if bt == null:
+                i += 1
+                continue
+            var hit = false
+            var j = 0
+            while j < len(enemies):
+                var e = enemies[j]
+                var et = e.get_component(Transform)
+                if et == null:
+                    j += 1
+                    continue
+                var dx = abs(bt.x - et.x)
+                var dy = abs(bt.y - et.y)
+                if dx < 20 and dy < 20:
+                    var hp = e.get_component(Health)
+                    if hp != null:
+                        hp.take_damage(10)
+                        if not hp.is_alive():
+                            _world.destroy_entity(e)
+                            _score = _score + 10
+                    hit = true
+                    _world.destroy_entity(b)
+                    break
+                j += 1
+            if hit:
+                break
+            i += 1
+        _score_label.set_text("Score: " + str(_score))
+        _enemy_count_label.set_text("Enemies: " + str(len(enemies)))
+
+fn get_game()
+    import "engine/core/game.piy"
+    return Game

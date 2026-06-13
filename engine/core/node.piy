@@ -1,0 +1,117 @@
+class Node:
+    var _name: string = ""
+    var _parent = null
+    var _children: array = []
+    var _active: bool = true
+    var _visible: bool = true
+    var _z_index: int = 0
+
+    fn init(name: string)
+        _name = name
+
+    fn get_name() -> string
+        return _name
+
+    fn set_name(n: string)
+        _name = n
+
+    fn get_parent()
+        return _parent
+
+    fn add_child(child)
+        child._parent = self
+        _children.append(child)
+        child._on_enter()
+
+    fn remove_child(child)
+        var idx = _children.find(child)
+        if idx >= 0:
+            _children.remove(idx)
+            child._parent = null
+            child._on_exit()
+
+    fn get_children() -> array
+        return _children
+
+    fn get_child_count() -> int
+        return len(_children)
+
+    fn get_child(idx: int)
+        if idx >= 0 and idx < len(_children):
+            return _children[idx]
+        return null
+
+    fn find_child(name: string)
+        for c in _children:
+            if c._name == name:
+                return c
+        return null
+
+    fn get_node(path: string)
+        if path == ".":
+            return self
+        var parts = path.split("/")
+        var current = self
+        for p in parts:
+            if p == "..":
+                current = current._parent
+            else:
+                current = current.find_child(p)
+            if current == null:
+                return null
+        return current
+
+    fn is_active() -> bool
+        return _active
+
+    fn set_active(val: bool)
+        _active = val
+
+    fn is_visible() -> bool
+        return _visible
+
+    fn set_visible(val: bool)
+        _visible = val
+
+    fn get_z_index() -> int
+        return _z_index
+
+    fn set_z_index(val: int)
+        _z_index = val
+
+    fn queue_free()
+        if _parent != null:
+            _parent._queue_delete(self)
+
+    fn _queue_delete(child)
+        var idx = _children.find(child)
+        if idx >= 0:
+            _children.remove(idx)
+            child._parent = null
+            child._on_exit()
+
+    fn update(dt: float)
+        if not _active:
+            return
+        _on_update(dt)
+        for c in _children:
+            c.update(dt)
+
+    fn draw(renderer)
+        if not _active or not _visible:
+            return
+        _on_draw(renderer)
+        for c in _children:
+            c.draw(renderer)
+
+    fn _on_enter()
+        pass
+
+    fn _on_exit()
+        pass
+
+    fn _on_update(dt: float)
+        pass
+
+    fn _on_draw(renderer)
+        pass

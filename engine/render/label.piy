@@ -1,0 +1,49 @@
+class Label:
+    extends Node
+    var _text: string = ""
+    var _x: float = 0.0
+    var _y: float = 0.0
+    var _font: string = "default"
+    var _font_size: int = 16
+    var _r: int = 255
+    var _g: int = 255
+    var _b: int = 255
+    var _align: string = "left"
+
+    fn init(name: string)
+        _name = name
+
+    fn set_text(t: string)
+        _text = t
+
+    fn get_text() -> string
+        return _text
+
+    fn set_position(x: float, y: float)
+        _x = x
+        _y = y
+
+    fn set_font(f: string)
+        _font = f
+
+    fn set_size(s: int)
+        _font_size = s
+
+    fn set_color(r: int, g: int, b: int)
+        _r = r
+        _g = g
+        _b = b
+
+    fn set_align(a: string)
+        _align = a
+
+    fn get_width() -> float
+        return float(len(_text)) * float(_font_size) * 0.6
+
+    fn get_height() -> float
+        return float(_font_size) * 1.2
+
+    fn _on_draw(renderer)
+        if _text == "":
+            return
+        renderer.draw_text(_text, _x, _y, _font, _font_size, _r, _g, _b)

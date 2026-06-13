@@ -1,0 +1,160 @@
+class UIButton:
+    extends UINode
+    var _text: string = ""
+    var _bg_r: int = 50
+    var _bg_g: int = 50
+    var _bg_b: int = 60
+    var _fg_r: int = 255
+    var _fg_g: int = 255
+    var _fg_b: int = 255
+    var _hover_r: int = 70
+    var _hover_g: int = 70
+    var _hover_b: int = 80
+    var _pressed: bool = false
+    var _hovered: bool = false
+    var _on_click_callback = null
+
+    fn init(label: string)
+        _text = label
+        _interactive = true
+
+    fn set_on_click(callback)
+        _on_click_callback = callback
+
+    fn set_colors(br: int, bg: int, bb: int, fr: int, fg: int, fb: int)
+        _bg_r = br
+        _bg_g = bg
+        _bg_b = bb
+        _fg_r = fr
+        _fg_g = fg
+        _fg_b = fb
+
+    fn on_click(x: float, y: float)
+        if _on_click_callback != null:
+            _on_click_callback.call()
+
+    fn on_hover(x: float, y: float)
+        _hovered = true
+
+    fn set_pressed(val: bool)
+        _pressed = val
+
+    fn _on_draw_ui(renderer)
+        var ax = get_abs_x()
+        var ay = get_abs_y()
+        if _pressed:
+            renderer.draw_rect(ax, ay, _width, _height, _bg_r - 20, _bg_g - 20, _bg_b - 20, 255)
+        elif _hovered:
+            renderer.draw_rect(ax, ay, _width, _height, _hover_r, _hover_g, _hover_b, 255)
+        else:
+            renderer.draw_rect(ax, ay, _width, _height, _bg_r, _bg_g, _bg_b, 255)
+        var tw = float(len(_text)) * 8.0
+        var tx = ax + (_width - tw) / 2.0
+        var ty = ay + (_height - 8.0) / 2.0
+        renderer.draw_text(_text, tx, ty, "default", 14, _fg_r, _fg_g, _fg_b)
+        _hovered = false
+
+class UILabel:
+    extends UINode
+    var _text: string = ""
+    var _font_size: int = 14
+    var _text_r: int = 255
+    var _text_g: int = 255
+    var _text_b: int = 255
+
+    fn init(label: string)
+        _text = label
+
+    fn set_text(t: string)
+        _text = t
+
+    fn set_font_size(s: int)
+        _font_size = s
+
+    fn set_text_color(r: int, g: int, b: int)
+        _text_r = r
+        _text_g = g
+        _text_b = b
+
+    fn _on_draw_ui(renderer)
+        if _text == "":
+            return
+        renderer.draw_text(_text, get_abs_x(), get_abs_y(), "default", _font_size, _text_r, _text_g, _text_b)
+
+class UIPanel:
+    extends UINode
+    var _bg_r: int = 30
+    var _bg_g: int = 30
+    var _bg_b: int = 40
+    var _bg_a: int = 200
+    var _border: bool = false
+    var _border_r: int = 100
+    var _border_g: int = 100
+    var _border_b: int = 120
+
+    fn init()
+        _interactive = false
+
+    fn set_background(r: int, g: int, b: int, a: int)
+        _bg_r = r
+        _bg_g = g
+        _bg_b = b
+        _bg_a = a
+
+    fn set_border(show: bool, r: int, g: int, b: int)
+        _border = show
+        _border_r = r
+        _border_g = g
+        _border_b = b
+
+    fn _on_draw_ui(renderer)
+        var ax = get_abs_x()
+        var ay = get_abs_y()
+        renderer.draw_rect(ax, ay, _width, _height, _bg_r, _bg_g, _bg_b, _bg_a)
+        if _border:
+            renderer.draw_rect(ax, ay, _width, 1.0, _border_r, _border_g, _border_b, 255)
+            renderer.draw_rect(ax, ay + _height - 1.0, _width, 1.0, _border_r, _border_g, _border_b, 255)
+            renderer.draw_rect(ax, ay, 1.0, _height, _border_r, _border_g, _border_b, 255)
+            renderer.draw_rect(ax + _width - 1.0, ay, 1.0, _height, _border_r, _border_g, _border_b, 255)
+
+class ProgressBar:
+    extends UINode
+    var _value: float = 0.0
+    var _max_value: float = 100.0
+    var _bar_r: int = 50
+    var _bar_g: int = 200
+    var _bar_b: int = 80
+    var _bg_r: int = 40
+    var _bg_g: int = 40
+    var _bg_b: int = 40
+
+    fn init()
+        pass
+
+    fn set_value(val: float)
+        _value = clamp(val, 0.0, _max_value)
+
+    fn get_value() -> float
+        return _value
+
+    fn set_max(max_val: float)
+        _max_value = max_val
+
+    fn set_bar_color(r: int, g: int, b: int)
+        _bar_r = r
+        _bar_g = g
+        _bar_b = b
+
+    fn get_progress() -> float
+        if _max_value == 0:
+            return 0.0
+        return _value / _max_value
+
+    fn _on_draw_ui(renderer)
+        var ax = get_abs_x()
+        var ay = get_abs_y()
+        renderer.draw_rect(ax, ay, _width, _height, _bg_r, _bg_g, _bg_b, 255)
+        var progress = get_progress()
+        var fill_w = _width * progress
+        if fill_w > 0:
+            renderer.draw_rect(ax, ay, fill_w, _height, _bar_r, _bar_g, _bar_b, 255)

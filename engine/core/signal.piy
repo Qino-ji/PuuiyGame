@@ -1,0 +1,45 @@
+class Signal:
+    var _connections: dict = {}
+
+    fn connect(signal_name: string, target, method: string)
+        if not _connections.has(signal_name):
+            _connections[signal_name] = []
+        _connections[signal_name].append({target: target, method: method})
+
+    fn disconnect(signal_name: string, target, method: string)
+        if not _connections.has(signal_name):
+            return
+        var list = _connections[signal_name]
+        var i = 0
+        while i < len(list):
+            if list[i].target == target and list[i].method == method:
+                list.remove(i)
+                return
+            i += 1
+
+    fn emit(signal_name: string)
+        if not _connections.has(signal_name):
+            return
+        for conn in _connections[signal_name]:
+            var fn_ref = conn.target.get_meta(conn.method)
+            if fn_ref != null:
+                fn_ref.call()
+
+    fn emit_args(signal_name: string, args: array)
+        if not _connections.has(signal_name):
+            return
+        for conn in _connections[signal_name]:
+            var fn_ref = conn.target.get_meta(conn.method)
+            if fn_ref != null:
+                fn_ref.call_args(args)
+
+    fn is_connected(signal_name: string, target, method: string) -> bool
+        if not _connections.has(signal_name):
+            return false
+        for conn in _connections[signal_name]:
+            if conn.target == target and conn.method == method:
+                return true
+        return false
+
+    fn clear()
+        _connections = {}

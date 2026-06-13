@@ -1,0 +1,302 @@
+{
+    "Function": {
+        "prefix": "fn",
+        "body": [
+            "fn ${1:name}(${2:args})",
+            "\t${3:pass}"
+        ],
+        "description": "Function definition"
+    },
+    "Function with return": {
+        "prefix": "fnr",
+        "body": [
+            "fn ${1:name}(${2:args}) -> ${3:type}",
+            "\t${4:pass}"
+        ],
+        "description": "Function with return type"
+    },
+    "Class": {
+        "prefix": "class",
+        "body": [
+            "class ${1:Name}:",
+            "\tvar ${2:name}: ${3:type} = ${4:value}",
+            "",
+            "\tfn init(${5:args})",
+            "\t\t${6:pass}"
+        ],
+        "description": "Class definition"
+    },
+    "Class extends": {
+        "prefix": "extends",
+        "body": [
+            "class ${1:Name}:",
+            "\textends ${2:Parent}",
+            "",
+            "\tfn init(${3:args})",
+            "\t\t${4:pass}"
+        ],
+        "description": "Extended class"
+    },
+    "If": {
+        "prefix": "if",
+        "body": [
+            "if ${1:condition}:",
+            "\t${2:pass}"
+        ],
+        "description": "If statement"
+    },
+    "If-Else": {
+        "prefix": "ifelse",
+        "body": [
+            "if ${1:condition}:",
+            "\t${2:pass}",
+            "else:",
+            "\t${3:pass}"
+        ],
+        "description": "If-else statement"
+    },
+    "If-Elif-Else": {
+        "prefix": "ifelif",
+        "body": [
+            "if ${1:condition}:",
+            "\t${2:pass}",
+            "elif ${3:condition}:",
+            "\t${4:pass}",
+            "else:",
+            "\t${5:pass}"
+        ],
+        "description": "If-elif-else statement"
+    },
+    "While": {
+        "prefix": "while",
+        "body": [
+            "while ${1:condition}:",
+            "\t${2:pass}"
+        ],
+        "description": "While loop"
+    },
+    "For": {
+        "prefix": "for",
+        "body": [
+            "for ${1:item} in ${2:collection}:",
+            "\t${3:pass}"
+        ],
+        "description": "For loop"
+    },
+    "For range": {
+        "prefix": "forr",
+        "body": [
+            "for ${1:i} in range(${2:n}):",
+            "\t${3:pass}"
+        ],
+        "description": "For loop with range"
+    },
+    "Import": {
+        "prefix": "import",
+        "body": [
+            "import \"${1:path}\""
+        ],
+        "description": "Import module"
+    },
+    "Var": {
+        "prefix": "var",
+        "body": [
+            "var ${1:name}: ${2:type} = ${3:value}"
+        ],
+        "description": "Variable declaration"
+    },
+    "Var no type": {
+        "prefix": "varn",
+        "body": [
+            "var ${1:name} = ${2:value}"
+        ],
+        "description": "Variable declaration without type"
+    },
+    "Return": {
+        "prefix": "return",
+        "body": [
+            "return ${1:value}"
+        ],
+        "description": "Return statement"
+    },
+    "Print": {
+        "prefix": "print",
+        "body": [
+            "print(${1:value})"
+        ],
+        "description": "Print statement"
+    },
+    "Lambda": {
+        "prefix": "lambda",
+        "body": [
+            "fn(${1:args}): ${2:expression}"
+        ],
+        "description": "Lambda function"
+    },
+    "Scene": {
+        "prefix": "scene",
+        "body": [
+            "class ${1:MyScene}:",
+            "\textends Scene",
+            "",
+            "\tfn init()",
+            "\t\t_name = \"${2:scene_name}\"",
+            "\t\tadd_layer(\"${3:main}\", ${4:1})",
+            "",
+            "\tfn enter()",
+            "\t\t${5:pass}",
+            "",
+            "\tfn update(dt: float)",
+            "\t\t${6:pass}"
+        ],
+        "description": "Scene definition"
+    },
+    "Entity": {
+        "prefix": "entity",
+        "body": [
+            "var ${1:entity} = world.create_entity()",
+            "${1:entity}.add_component(Transform.new())",
+            "${1:entity}.add_component(SpriteRenderer.new())"
+        ],
+        "description": "Create ECS entity"
+    },
+    "System": {
+        "prefix": "system",
+        "body": [
+            "class ${1:MySystem}:",
+            "\textends System",
+            "",
+            "\tfn init()",
+            "\t\t_priority = ${2:0}",
+            "",
+            "\tfn update(world, dt: float)",
+            "\t\tvar entities = world.get_entities_with(${3:Transform})",
+            "\t\tfor e in entities:",
+            "\t\t\t${4:pass}"
+        ],
+        "description": "ECS System definition"
+    },
+    "Sprite": {
+        "prefix": "sprite",
+        "body": [
+            "var ${1:sprite} = Sprite.new(\"${2:name}\")",
+            "${1:sprite}.set_texture(\"${3:texture}\")",
+            "${1:sprite}.set_position(${4:x}, ${5:y})",
+            "${1:sprite}.set_size(${6:w}, ${7:h})"
+        ],
+        "description": "Create sprite"
+    },
+    "Button": {
+        "prefix": "button",
+        "body": [
+            "var ${1:btn} = UIButton.new(\"${2:label}\")",
+            "${1:btn}.set_position(${3:x}, ${4:y})",
+            "${1:btn}.set_size(${5:w}, ${6:h})",
+            "${1:btn}.set_on_click(fn(): ${7:pass})"
+        ],
+        "description": "Create UI button"
+    },
+    "Label": {
+        "prefix": "label",
+        "body": [
+            "var ${1:lbl} = Label.new(\"${2:name}\")",
+            "${1:lbl}.set_text(\"${3:text}\")",
+            "${1:lbl}.set_position(${4:x}, ${5:y})",
+            "${1:lbl}.set_size(${6:20})",
+            "${1:lbl}.set_color(${7:255}, ${8:255}, ${9:255})"
+        ],
+        "description": "Create label"
+    },
+    "Physics body": {
+        "prefix": "physics",
+        "body": [
+            "var ${1:body} = PhysicsBody.new(${2:x}, ${3:y}, ${4:w}, ${5:h})",
+            "${1:body}.set_static(${6:false})",
+            "${1:body}.set_mass(${7:1.0})",
+            "physics.add_body(${1:body})"
+        ],
+        "description": "Create physics body"
+    },
+    "Tween": {
+        "prefix": "tween",
+        "body": [
+            "var ${1:tween} = Tween.new(${2:target}, ${3:1.0}, {${4:x}: ${5:100}, ${6:y}: ${7:200}}, \"${8:easeInOutQuad}\")",
+            "${1:tween}.play()"
+        ],
+        "description": "Create tween animation"
+    },
+    "Tween manager": {
+        "prefix": "tweenmgr",
+        "body": [
+            "var tweens = TweenManager.new()",
+            "tweens.create_${1:position}(${2:target}, ${3:x}, ${4:y}, ${5:1.0}, \"${6:easeInOutQuad}\")",
+            "",
+            "fn update(dt: float)",
+            "\ttweens.update(dt)"
+        ],
+        "description": "Tween manager setup"
+    },
+    "Particle emitter": {
+        "prefix": "particle",
+        "body": [
+            "var emitter = ParticleEmitter.new()",
+            "emitter.set_position(${1:x}, ${2:y})",
+            "emitter.set_emission(${3:10.0}, ${4:100})",
+            "emitter.set_life(${5:0.5}, ${6:2.0})",
+            "emitter.set_speed(${7:50.0}, ${8:150.0})",
+            "emitter.set_size(${9:2.0}, ${10:6.0})",
+            "emitter.set_color(${11:255}, ${12:255}, ${13:255}, ${14:255})",
+            "emitter.set_direction(${15:-90}, ${16:360})",
+            "emitter.set_gravity(${17:100})",
+            "emitter.start()",
+            "",
+            "fn update(dt: float)",
+            "\temitter.update(dt)",
+            "",
+            "fn draw(renderer)",
+            "\temitter.draw(renderer)"
+        ],
+        "description": "Create particle emitter"
+    },
+    "Animation clip": {
+        "prefix": "animclip",
+        "body": [
+            "var clip_${1:name} = AnimationClip.new(\"${2:walk}\")",
+            "clip_${1:name}.set_loop(${3:true})",
+            "",
+            "var track_x = KeyframeTrack.new(\"x\")",
+            "track_x.add_keyframe(${4:0.0}, ${5:0.0}, \"${6:easeInOutQuad}\")",
+            "track_x.add_keyframe(${7:0.5}, ${8:100.0}, \"${9:easeInOutQuad}\")",
+            "track_x.add_keyframe(${10:1.0}, ${11:0.0}, \"${12:easeInOutQuad}\")",
+            "clip_${1:name}.add_track(track_x)",
+            "",
+            "var player = AnimationPlayer.new(${13:target})",
+            "player.add_clip(clip_${1:name})",
+            "player.play(\"${2:walk}\")",
+            "",
+            "fn update(dt: float)",
+            "\tplayer.update(dt)"
+        ],
+        "description": "Create keyframe animation"
+    },
+    "Keyframe track": {
+        "prefix": "track",
+        "body": [
+            "var track_${1:name} = KeyframeTrack.new(\"${2:x}\")",
+            "track_${1:name}.add_keyframe(${3:0.0}, ${4:0.0}, \"${5:easeInOutQuad}\")",
+            "track_${1:name}.add_keyframe(${6:0.5}, ${7:100.0}, \"${8:easeInOutQuad}\")",
+            "track_${1:name}.add_keyframe(${9:1.0}, ${10:0.0}, \"${11:easeInOutQuad}\")"
+        ],
+        "description": "Create keyframe track"
+    },
+    "Animation player": {
+        "prefix": "animplayer",
+        "body": [
+            "var anim_player = AnimationPlayer.new(${1:target})",
+            "",
+            "fn update(dt: float)",
+            "\tanim_player.update(dt)"
+        ],
+        "description": "Create animation player"
+    }
+}

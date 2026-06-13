@@ -1,0 +1,45 @@
+class Entity:
+    var _id: int = 0
+    var _active: bool = true
+    var _components: dict = {}
+    var _tags: array = []
+
+    fn init(id: int)
+        _id = id
+
+    fn get_id() -> int
+        return _id
+
+    fn is_active() -> bool
+        return _active
+
+    fn set_active(val: bool)
+        _active = val
+
+    fn add_component(comp)
+        _components[typeof(comp)] = comp
+
+    fn remove_component(comp_type)
+        _components.erase(comp_type)
+
+    fn get_component(comp_type)
+        return _components.get(comp_type, null)
+
+    fn has_component(comp_type) -> bool
+        return _components.has(comp_type)
+
+    fn get_components() -> array
+        var result = []
+        for k in _components:
+            result.append(_components[k])
+        return result
+
+    fn add_tag(tag: string)
+        if not _tags.has(tag):
+            _tags.append(tag)
+
+    fn has_tag(tag: string) -> bool
+        return _tags.has(tag)
+
+    fn remove_tag(tag: string)
+        _tags.erase(tag)

@@ -1,0 +1,184 @@
+class Particle:
+    var _x: float = 0.0
+    var _y: float = 0.0
+    var _vx: float = 0.0
+    var _vy: float = 0.0
+    var _life: float = 1.0
+    var _max_life: float = 1.0
+    var _size: float = 4.0
+    var _r: int = 255
+    var _g: int = 255
+    var _b: int = 255
+    var _a: int = 255
+    var _gravity: float = 0.0
+    var _friction: float = 0.98
+    var _active: bool = true
+
+    fn init()
+        pass
+
+    fn get_progress() -> float
+        if _max_life == 0:
+            return 1.0
+        return clamp(_life / _max_life, 0.0, 1.0)
+
+    fn update(dt: float)
+        if not _active:
+            return
+        _life = _life - dt
+        if _life <= 0:
+            _active = false
+            return
+        _vy = _vy + _gravity * dt
+        _vx = _vx * _friction
+        _vy = _vy * _friction
+        _x = _x + _vx * dt
+        _y = _y + _vy * dt
+
+    fn draw(renderer)
+        if not _active:
+            return
+        var progress = get_progress()
+        var alpha = int(float(_a) * progress)
+        renderer.draw_rect(_x, _y, _size, _size, _r, _g, _b, alpha)
+
+
+class ParticleEmitter:
+    var _x: float = 0.0
+    var _y: float = 0.0
+    var _particles: array = []
+    var _max_particles: int = 100
+    var _emit_rate: float = 10.0
+    var _emit_timer: float = 0.0
+    var _emit_count: int = 0
+    var _active: bool = true
+    var _loop: bool = true
+    var _duration: float = 0.0
+    var _elapsed: float = 0.0
+    var _min_life: float = 0.5
+    var _max_life: float = 2.0
+    var _min_speed: float = 50.0
+    var _max_speed: float = 150.0
+    var _min_size: float = 2.0
+    var _max_size: float = 6.0
+    var _min_angle: float = 0.0
+    var _max_angle: float = 360.0
+    var _gravity: float = 100.0
+    var _friction: float = 0.98
+    var _r: int = 255
+    var _g: int = 255
+    var _b: int = 255
+    var _a: int = 255
+    var _spread: float = 360.0
+    var _direction: float = 270.0
+
+    fn init()
+        pass
+
+    fn set_position(x: float, y: float)
+        _x = x
+        _y = y
+
+    fn set_emission(rate: float, max: int)
+        _emit_rate = rate
+        _max_particles = max
+
+    fn set_life(min_l: float, max_l: float)
+        _min_life = min_l
+        _max_life = max_l
+
+    fn set_speed(min_s: float, max_s: float)
+        _min_speed = min_s
+        _max_speed = max_s
+
+    fn set_size(min_s: float, max_s: float)
+        _min_size = min_s
+        _max_size = max_s
+
+    fn set_color(r: int, g: int, b: int, a: int)
+        _r = r
+        _g = g
+        _b = b
+        _a = a
+
+    fn set_gravity(g: float)
+        _gravity = g
+
+    fn set_friction(f: float)
+        _friction = f
+
+    fn set_direction(dir: float, spread: float)
+        _direction = dir
+        _spread = spread
+
+    fn set_duration(dur: float)
+        _duration = dur
+
+    fn set_loop(val: bool)
+        _loop = val
+
+    fn start()
+        _active = true
+        _elapsed = 0.0
+        _emit_timer = 0.0
+
+    fn stop()
+        _active = false
+
+    fn is_active() -> bool
+        return _active
+
+    fn get_particle_count() -> int
+        return len(_particles)
+
+    fn _emit()
+        if len(_particles) >= _max_particles:
+            return
+        var p = Particle.new()
+        p._x = _x
+        p._y = _y
+        var life = _min_life + random() * (_max_life - _min_life)
+        p._life = life
+        p._max_life = life
+        var speed = _min_speed + random() * (_max_speed - _min_speed)
+        var angle = _direction + (random() - 0.5) * _spread
+        var rad = angle * 3.14159 / 180.0
+        p._vx = cos(rad) * speed
+        p._vy = sin(rad) * speed
+        p._size = _min_size + random() * (_max_size - _min_size)
+        p._r = _r
+        p._g = _g
+        p._b = _b
+        p._a = _a
+        p._gravity = _gravity
+        p._friction = _friction
+        _particles.append(p)
+
+    fn update(dt: float)
+        if not _active:
+            return
+        _elapsed = _elapsed + dt
+        if _duration > 0 and _elapsed >= _duration:
+            if _loop:
+                _elapsed = 0.0
+            else:
+                _active = false
+                return
+        _emit_timer = _emit_timer + dt
+        if _emit_timer >= 1.0 / _emit_rate:
+            _emit_timer = 0.0
+            _emit()
+        var i = 0
+        while i < len(_particles):
+            _particles[i].update(dt)
+            if not _particles[i]._active:
+                _particles.remove(i)
+            else:
+                i += 1
+
+    fn draw(renderer)
+        for p in _particles:
+            p.draw(renderer)
+
+    fn clear()
+        _particles = []

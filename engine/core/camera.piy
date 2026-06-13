@@ -1,0 +1,90 @@
+class Camera:
+    var _x: float = 0.0
+    var _y: float = 0.0
+    var _zoom: float = 1.0
+    var _rotation: float = 0.0
+    var _target = null
+    var _shake_amount: float = 0.0
+    var _shake_decay: float = 5.0
+    var _follow_speed: float = 5.0
+
+    fn init()
+        pass
+
+    fn get_x() -> float
+        return _x
+
+    fn get_y() -> float
+        return _y
+
+    fn set_position(x: float, y: float)
+        _x = x
+        _y = y
+
+    fn move(dx: float, dy: float)
+        _x += dx
+        _y += dy
+
+    fn get_zoom() -> float
+        return _zoom
+
+    fn set_zoom(z: float)
+        _zoom = z
+
+    fn get_rotation() -> float
+        return _rotation
+
+    fn set_rotation(r: float)
+        _rotation = r
+
+    fn set_target(node)
+        _target = node
+
+    fn clear_target()
+        _target = null
+
+    fn shake(amount: float)
+        _shake_amount = amount
+
+    fn update(dt: float)
+        if _target != null:
+            var tx = _target._x
+            var ty = _target._y
+            _x = _x + (tx - _x) * _follow_speed * dt
+            _y = _y + (ty - _y) * _follow_speed * dt
+        if _shake_amount > 0:
+            _shake_amount = _shake_amount - _shake_decay * dt
+            if _shake_amount < 0:
+                _shake_amount = 0
+
+    fn get_view_x() -> float
+        var offset = 0.0
+        if _shake_amount > 0:
+            offset = (random() - 0.5) * _shake_amount * 2
+        return _x + offset
+
+    fn get_view_y() -> float
+        var offset = 0.0
+        if _shake_amount > 0:
+            offset = (random() - 0.5) * _shake_amount * 2
+        return _y + offset
+
+    fn world_to_screen(wx: float, wy: float) -> dict
+        var vx = (wx - get_view_x()) * _zoom
+        var vy = (wy - get_view_y()) * _zoom
+        return {x: vx, y: vy}
+
+    fn screen_to_world(sx: float, sy: float) -> dict
+        var wx = sx / _zoom + get_view_x()
+        var wy = sy / _zoom + get_view_y()
+        return {x: wx, y: wy}
+
+    fn apply(renderer)
+        renderer.set_offset(get_view_x(), get_view_y())
+        renderer.set_zoom(_zoom)
+        renderer.set_rotation(_rotation)
+
+    fn reset(renderer)
+        renderer.set_offset(0, 0)
+        renderer.set_zoom(1.0)
+        renderer.set_rotation(0)

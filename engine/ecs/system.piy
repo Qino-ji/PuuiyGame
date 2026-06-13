@@ -1,0 +1,24 @@
+class System:
+    var _active: bool = true
+    var _priority: int = 0
+
+    fn init()
+        pass
+
+    fn is_active() -> bool
+        return _active
+
+    fn set_active(val: bool)
+        _active = val
+
+    fn get_priority() -> int
+        return _priority
+
+    fn set_priority(val: int)
+        _priority = val
+
+    fn update(world, dt: float)
+        pass
+
+    fn draw(world, renderer)
+        pass

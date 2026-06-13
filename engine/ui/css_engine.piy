@@ -1,0 +1,92 @@
+class CSSParser:
+    var _rules: array = []
+    var _parsed: dict = {}
+
+    fn init()
+        pass
+
+    fn parse(css_text: string)
+        var current_selector = ""
+        var current_props = {}
+        var i = 0
+        var len_text = len(css_text)
+        while i < len_text:
+            var ch = css_text[i]
+            if ch == "{":
+                var sel = ""
+                var j = i - 1
+                while j >= 0 and css_text[j] == " ":
+                    j = j - 1
+                while j >= 0 and css_text[j] != "\n" and css_text[j] != " ":
+                    sel = css_text[j] + sel
+                    j = j - 1
+                current_selector = sel.trim()
+                current_props = {}
+            elif ch == "}":
+                if current_selector != "":
+                    _parsed[current_selector] = current_props
+                current_selector = ""
+            elif ch == ":":
+                var prop_name = ""
+                var k = i - 1
+                while k >= 0 and css_text[k] == " ":
+                    k = k - 1
+                while k >= 0 and css_text[k] != "\n" and css_text[k] != " " and css_text[k] != "{":
+                    prop_name = css_text[k] + prop_name
+                    k = k - 1
+                var prop_val = ""
+                var m = i + 1
+                while m < len_text and css_text[m] != ";" and css_text[m] != "\n":
+                    if css_text[m] != " ":
+                        prop_val = prop_val + css_text[m]
+                    m = m + 1
+                current_props[prop_name] = prop_val
+                i = m
+            i = i + 1
+
+    fn get_style(selector: string) -> dict
+        return _parsed.get(selector, {})
+
+    fn get_color(selector: string, prop: string) -> dict
+        var val = _parsed.get(selector, {}).get(prop, "000000")
+        var r_val = str_to_int(val[0:2], 16)
+        var g_val = str_to_int(val[2:4], 16)
+        var b_val = str_to_int(val[4:6], 16)
+        return {r: r_val, g: g_val, b: b_val}
+
+    fn get_int(selector: string, prop: string, default_val: int) -> int
+        var val = _parsed.get(selector, {}).get(prop, "")
+        if val == "":
+            return default_val
+        return int(val)
+
+    fn has_selector(selector: string) -> bool
+        return _parsed.has(selector)
+
+
+class ThemeManager:
+    var _themes: dict = {}
+    var _current: string = ""
+    var _parsers: dict = {}
+
+    fn init()
+        pass
+
+    fn load_theme(name: string, css_text: string)
+        var parser = CSSParser.new()
+        parser.parse(css_text)
+        _themes[name] = css_text
+        _parsers[name] = parser
+
+    fn set_theme(name: string)
+        if _themes.has(name):
+            _current = name
+
+    fn get_parser() -> CSSParser
+        return _parsers.get(_current, null)
+
+    fn get_style(selector: string) -> dict
+        var parser = _parsers.get(_current, null)
+        if parser != null:
+            return parser.get_style(selector)
+        return {}

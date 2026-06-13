@@ -1,0 +1,99 @@
+class Sprite:
+    extends Node
+    var _texture: string = ""
+    var _x: float = 0.0
+    var _y: float = 0.0
+    var _width: float = 32.0
+    var _height: float = 32.0
+    var _origin_x: float = 0.0
+    var _origin_y: float = 0.0
+    var _scale_x: float = 1.0
+    var _scale_y: float = 1.0
+    var _rotation: float = 0.0
+    var _r: int = 255
+    var _g: int = 255
+    var _b: int = 255
+    var _a: int = 255
+    var _flip_x: bool = false
+    var _flip_y: bool = false
+    var _visible: bool = true
+
+    fn init(name: string)
+        _name = name
+
+    fn set_texture(tex: string)
+        _texture = tex
+
+    fn get_texture() -> string
+        return _texture
+
+    fn set_position(x: float, y: float)
+        _x = x
+        _y = y
+
+    fn get_x() -> float
+        return _x
+
+    fn get_y() -> float
+        return _y
+
+    fn set_size(w: float, h: float)
+        _width = w
+        _height = h
+
+    fn get_width() -> float
+        return _width * _scale_x
+
+    fn get_height() -> float
+        return _height * _scale_y
+
+    fn set_scale(sx: float, sy: float)
+        _scale_x = sx
+        _scale_y = sy
+
+    fn set_rotation(r: float)
+        _rotation = r
+
+    fn set_color(r: int, g: int, b: int, a: int)
+        _r = r
+        _g = g
+        _b = b
+        _a = a
+
+    fn set_origin(ox: float, oy: float)
+        _origin_x = ox
+        _origin_y = oy
+
+    fn set_flip_x(val: bool)
+        _flip_x = val
+
+    fn set_flip_y(val: bool)
+        _flip_y = val
+
+    fn get_bounds() -> dict
+        return {
+            x: _x - _origin_x * _scale_x,
+            y: _y - _origin_y * _scale_y,
+            w: _width * _scale_x,
+            h: _height * _scale_y
+        }
+
+    fn get_center() -> dict
+        return {
+            x: _x + (_width * _scale_x) / 2.0 - _origin_x * _scale_x,
+            y: _y + (_height * _scale_y) / 2.0 - _origin_y * _scale_y
+        }
+
+    fn collides_with(other) -> bool
+        var a = get_bounds()
+        var b = other.get_bounds()
+        return a.x < b.x + b.w and a.x + a.w > b.x and a.y < b.y + b.h and a.y + a.h > b.y
+
+    fn point_inside(px: float, py: float) -> bool
+        var b = get_bounds()
+        return px >= b.x and px <= b.x + b.w and py >= b.y and py <= b.y + b.h
+
+    fn _on_draw(renderer)
+        if not _visible or _texture == "":
+            return
+        renderer.draw_texture(_texture, _x, _y, _width * _scale_x, _height * _scale_y)

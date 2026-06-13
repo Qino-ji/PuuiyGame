@@ -1,0 +1,52 @@
+class RenderLayer:
+    var _name: string = ""
+    var _order: int = 0
+    var _nodes: array = []
+    var _visible: bool = true
+
+    fn init(name: string, order: int)
+        _name = name
+        _order = order
+
+    fn get_name() -> string
+        return _name
+
+    fn get_order() -> int
+        return _order
+
+    fn set_visible(val: bool)
+        _visible = val
+
+    fn is_visible() -> bool
+        return _visible
+
+    fn add_node(node)
+        _nodes.append(node)
+
+    fn remove_node(node)
+        var idx = _nodes.find(node)
+        if idx >= 0:
+            _nodes.remove(idx)
+
+    fn get_nodes() -> array
+        return _nodes
+
+    fn get_node_count() -> int
+        return len(_nodes)
+
+    fn update(dt: float)
+        for n in _nodes:
+            if n._active:
+                n._on_update(dt)
+
+    fn draw(renderer, camera)
+        if not _visible:
+            return
+        if camera != null:
+            camera.apply(renderer)
+        _nodes.sort(fn(a, b): return a._z_index < b._z_index)
+        for n in _nodes:
+            if n._active and n._visible:
+                n._on_draw(renderer)
+        if camera != null:
+            camera.reset(renderer)

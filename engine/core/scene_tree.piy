@@ -1,0 +1,42 @@
+var _root = null
+var _deletes: array = []
+
+fn init()
+    _root = Node.new()
+    _root.set_name("root")
+
+fn get_root()
+    return _root
+
+fn add_child(node)
+    _root.add_child(node)
+
+fn remove_child(node)
+    _root.remove_child(node)
+
+fn update(dt: float)
+    _root.update(dt)
+
+fn process(dt: float)
+    _root.process(dt)
+
+fn draw()
+    _root.draw()
+
+fn queue_delete(node)
+    _deletes.append(node)
+
+fn flush_deletes()
+    while len(_deletes) > 0:
+        var node = _deletes.pop()
+        if node._parent != null:
+            node._parent.remove_child(node)
+
+fn find_node(name: string)
+    return _root.find_child(name)
+
+fn find_nodes(name: string) -> array
+    return _root.find_children(name)
+
+fn get_node_count() -> int
+    return _root.get_child_count()

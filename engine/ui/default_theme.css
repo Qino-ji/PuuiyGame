@@ -1,0 +1,62 @@
+button {
+    background-color: #32323C;
+    color: #FFFFFF;
+    border: 1px solid #505068;
+    border-radius: 4;
+    padding: 8;
+    font-size: 14;
+}
+
+button:hover {
+    background-color: #46464F;
+}
+
+button:pressed {
+    background-color: #1E1E28;
+}
+
+label {
+    color: #E0E0E0;
+    font-size: 14;
+}
+
+panel {
+    background-color: #1E1E28CC;
+    border: 1px solid #646478;
+    border-radius: 6;
+    padding: 8;
+}
+
+progress-bar {
+    background-color: #28282E;
+    border: 1px solid #3C3C44;
+    border-radius: 3;
+}
+
+progress-bar-fill {
+    background-color: #32C850;
+    border-radius: 3;
+}
+
+text-input {
+    background-color: #28282E;
+    color: #E0E0E0;
+    border: 1px solid #505068;
+    border-radius: 3;
+    padding: 6;
+    font-size: 14;
+}
+
+scrollbar {
+    background-color: #28282E;
+    width: 8;
+}
+
+tooltip {
+    background-color: #32323CEE;
+    color: #FFFFFF;
+    border: 1px solid #646478;
+    border-radius: 3;
+    padding: 4;
+    font-size: 12;
+}

@@ -1,0 +1,115 @@
+class Transform:
+    var x: float = 0.0
+    var y: float = 0.0
+    var scaleX: float = 1.0
+    var scaleY: float = 1.0
+    var rotation: float = 0.0
+
+    fn init()
+        pass
+
+    fn set_position(px: float, py: float)
+        x = px
+        y = py
+
+    fn move(dx: float, dy: float)
+        x += dx
+        y += dy
+
+class Velocity:
+    var vx: float = 0.0
+    var vy: float = 0.0
+
+    fn init()
+        pass
+
+    fn set(vx_val: float, vy_val: float)
+        vx = vx_val
+        vy = vy_val
+
+class SpriteRenderer:
+    var texture: string = ""
+    var width: float = 32.0
+    var height: float = 32.0
+    var r: int = 255
+    var g: int = 255
+    var b: int = 255
+    var a: int = 255
+    var z_index: int = 0
+
+    fn init()
+        pass
+
+class RigidBody:
+    var mass: float = 1.0
+    var gravity_scale: float = 1.0
+    var is_static: bool = false
+    var velocity_x: float = 0.0
+    var velocity_y: float = 0.0
+    var friction: float = 0.1
+
+    fn init()
+        pass
+
+class Collider:
+    var width: float = 32.0
+    var height: float = 32.0
+    var offset_x: float = 0.0
+    var offset_y: float = 0.0
+    var is_trigger: bool = false
+
+    fn init()
+        pass
+
+class Health:
+    var current: int = 100
+    var maximum: int = 100
+
+    fn init()
+        pass
+
+    fn take_damage(amount: int)
+        current = current - amount
+        if current < 0:
+            current = 0
+
+    fn heal(amount: int)
+        current = current + amount
+        if current > maximum:
+            current = maximum
+
+    fn is_alive() -> bool
+        return current > 0
+
+class Timer:
+    var duration: float = 0.0
+    var elapsed: float = 0.0
+    var loop: bool = false
+    var finished: bool = false
+
+    fn init(dur: float, does_loop: bool)
+        duration = dur
+        loop = does_loop
+
+    fn update(dt: float)
+        if finished and not loop:
+            return
+        elapsed += dt
+        if elapsed >= duration:
+            if loop:
+                elapsed = elapsed - duration
+            else:
+                finished = true
+                elapsed = duration
+
+    fn reset()
+        elapsed = 0.0
+        finished = false
+
+    fn is_done() -> bool
+        return finished
+
+    fn get_progress() -> float
+        if duration == 0:
+            return 1.0
+        return clamp(elapsed / duration, 0.0, 1.0)

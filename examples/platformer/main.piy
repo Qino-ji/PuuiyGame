@@ -1,0 +1,160 @@
+import "engine/core/game.piy"
+import "engine/core/scene.piy"
+import "engine/core/node.piy"
+import "engine/core/camera.piy"
+import "engine/render/sprite.piy"
+import "engine/render/animated_sprite.piy"
+import "engine/render/label.piy"
+import "engine/core/input.piy"
+import "engine/physics/physics_2d.piy"
+
+class GameWorld:
+    extends Scene
+    var _player = null
+    var _platforms: array = []
+    var _enemies: array = []
+    var _score_label = null
+    var _health_label = null
+    var _player_speed: float = 200.0
+    var _jump_force: float = -400.0
+    var _gravity: float = 800.0
+    var _player_vy: float = 0.0
+    var _on_ground: bool = false
+    var _score: int = 0
+    var _health: int = 3
+    var _physics: PhysicsWorld
+
+    fn init()
+        _name = "world"
+        _physics = PhysicsWorld.new()
+        _physics.set_gravity(0, 800)
+        add_layer("background", 0)
+        add_layer("main", 1)
+        add_layer("foreground", 2)
+        add_layer("ui", 10)
+
+    fn enter()
+        _player = Sprite.new("player")
+        _player.set_texture("player_idle")
+        _player.set_position(100, 400)
+        _player.set_size(32, 48)
+        add_to_layer("main", _player)
+
+        var ground = Sprite.new("ground")
+        ground.set_texture("ground")
+        ground.set_position(0, 550)
+        ground.set_size(800, 50)
+        add_to_layer("main", ground)
+        _platforms.append(ground)
+
+        var plat1 = Sprite.new("plat1")
+        plat1.set_texture("platform")
+        plat1.set_position(200, 450)
+        plat1.set_size(128, 32)
+        add_to_layer("main", plat1)
+        _platforms.append(plat1)
+
+        var plat2 = Sprite.new("plat2")
+        plat2.set_texture("platform")
+        plat2.set_position(450, 350)
+        plat2.set_size(128, 32)
+        add_to_layer("main", plat2)
+        _platforms.append(plat2)
+
+        var enemy = Sprite.new("enemy1")
+        enemy.set_texture("enemy")
+        enemy.set_position(500, 520)
+        enemy.set_size(32, 32)
+        add_to_layer("main", enemy)
+        _enemies.append(enemy)
+
+        var coin1 = Sprite.new("coin1")
+        coin1.set_texture("coin")
+        coin1.set_position(240, 420)
+        coin1.set_size(16, 16)
+        add_to_layer("main", coin1)
+
+        var coin2 = Sprite.new("coin2")
+        coin2.set_texture("coin")
+        coin2.set_position(490, 320)
+        coin2.set_size(16, 16)
+        add_to_layer("main", coin2)
+
+        _score_label = Label.new("score")
+        _score_label.set_text("Score: 0")
+        _score_label.set_position(10, 10)
+        _score_label.set_size(20)
+        _score_label.set_color(255, 255, 255)
+        add_to_layer("ui", _score_label)
+
+        _health_label = Label.new("health")
+        _health_label.set_text("Health: 3")
+        _health_label.set_position(10, 35)
+        _health_label.set_size(20)
+        _health_label.set_color(255, 80, 80)
+        add_to_layer("ui", _health_label)
+
+        var input = get_game().get_input()
+
+    fn update(dt: float)
+        var input = get_game().get_input()
+
+        var move_x = 0.0
+        if input.key_down("left"):
+            move_x = -_player_speed
+        if input.key_down("right"):
+            move_x = _player_speed
+
+        if input.key_pressed("up") and _on_ground:
+            _player_vy = _jump_force
+            _on_ground = false
+
+        _player_vy = _player_vy + _gravity * dt
+
+        var px = _player.get_x() + move_x * dt
+        var py = _player.get_y() + _player_vy * dt
+
+        _on_ground = false
+        for p in _platforms:
+            var pb = p.get_bounds()
+            var player_right = px + 32
+            var player_bottom = py + 48
+            if player_right > pb.x and px < pb.x + pb.w and player_bottom > pb.y and py + 48 < pb.y + 16:
+                py = pb.y - 48
+                _player_vy = 0.0
+                _on_ground = true
+
+        if px < 0:
+            px = 0
+        if px > 768:
+            px = 768
+        if py > 600:
+            py = 0
+            _health = _health - 1
+
+        _player.set_position(px, py)
+
+        for enemy in _enemies:
+            var eb = enemy.get_bounds()
+            var player_b = _player.get_bounds()
+            if _player.collides_with(enemy):
+                if _player_vy > 0 and py + 48 < eb.y + 16:
+                    enemy.set_position(-100, -100)
+                    _score = _score + 100
+                else:
+                    _health = _health - 1
+                    _player_vy = _jump_force
+
+        _score_label.set_text("Score: " + str(_score))
+        _health_label.set_text("Health: " + str(_health))
+
+        if _health <= 0:
+            quit()
+
+    fn quit()
+        var game = get_game()
+        game.quit()
+
+fn get_game()
+    import "engine/core/game.piy"
+    return Game

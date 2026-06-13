@@ -1,0 +1,49 @@
+class Scene:
+    extends Node
+    var _camera = null
+    var _layers: array = []
+    var _layer_map: dict = {}
+
+    fn init(name: string)
+        _name = name
+        _camera = Camera.new()
+
+    fn get_camera()
+        return _camera
+
+    fn add_layer(name: string, order: int)
+        var layer = RenderLayer.new(name, order)
+        _layers.append(layer)
+        _layer_map[name] = layer
+        _layers.sort(fn(a, b): return a._order < b._order)
+
+    fn get_layer(name: string)
+        return _layer_map.get(name, null)
+
+    fn add_to_layer(name: string, node)
+        var layer = _layer_map.get(name, null)
+        if layer != null:
+            layer.add_node(node)
+
+    fn remove_from_layer(name: string, node)
+        var layer = _layer_map.get(name, null)
+        if layer != null:
+            layer.remove_node(node)
+
+    fn enter()
+        pass
+
+    fn exit()
+        pass
+
+    fn update(dt: float)
+        for c in _children:
+            c.update(dt)
+        for layer in _layers:
+            layer.update(dt)
+
+    fn draw(renderer)
+        for layer in _layers:
+            layer.draw(renderer, _camera)
+        for c in _children:
+            c.draw(renderer)

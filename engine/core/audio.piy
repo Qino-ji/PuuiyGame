@@ -1,0 +1,61 @@
+class AudioManager:
+    var _sounds: dict = {}
+    var _music: dict = {}
+    var _sfx_volume: float = 1.0
+    var _music_volume: float = 0.7
+    var _current_music: string = ""
+
+    fn init()
+        pass
+
+    fn load_sound(name: string, path: string)
+        _sounds[name] = NativeAudio.load_sound(path)
+
+    fn load_music(name: string, path: string)
+        _music[name] = NativeAudio.load_music(path)
+
+    fn play_sfx(name: string)
+        if _sounds.has(name):
+            _sounds[name].play(_sfx_volume)
+
+    fn play_music(name: string, loop: bool)
+        if _music.has(name):
+            if _current_music != "":
+                stop_music()
+            _current_music = name
+            _music[name].play(_music_volume, loop)
+
+    fn stop_music()
+        if _current_music != "" and _music.has(_current_music):
+            _music[_current_music].stop()
+            _current_music = ""
+
+    fn pause_music()
+        if _current_music != "" and _music.has(_current_music):
+            _music[_current_music].pause()
+
+    fn resume_music()
+        if _current_music != "" and _music.has(_current_music):
+            _music[_current_music].resume()
+
+    fn set_sfx_volume(vol: float)
+        _sfx_volume = clamp(vol, 0.0, 1.0)
+
+    fn set_music_volume(vol: float)
+        _music_volume = clamp(vol, 0.0, 1.0)
+        if _current_music != "" and _music.has(_current_music):
+            _music[_current_music].set_volume(_music_volume)
+
+    fn get_sfx_volume() -> float
+        return _sfx_volume
+
+    fn get_music_volume() -> float
+        return _music_volume
+
+    fn update()
+        pass
+
+    fn cleanup()
+        stop_music()
+        _sounds = {}
+        _music = {}

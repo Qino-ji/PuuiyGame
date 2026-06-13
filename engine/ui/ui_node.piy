@@ -1,0 +1,89 @@
+class UINode:
+    var _x: float = 0.0
+    var _y: float = 0.0
+    var _width: float = 100.0
+    var _height: float = 30.0
+    var _visible: bool = true
+    var _interactive: bool = false
+    var _parent_ui = null
+    var _children_ui: array = []
+    var _style: dict = {}
+
+    fn init()
+        pass
+
+    fn set_position(x: float, y: float)
+        _x = x
+        _y = y
+
+    fn get_x() -> float
+        return _x
+
+    fn get_y() -> float
+        return _y
+
+    fn set_size(w: float, h: float)
+        _width = w
+        _height = h
+
+    fn get_width() -> float
+        return _width
+
+    fn get_height() -> float
+        return _height
+
+    fn set_visible(val: bool)
+        _visible = val
+
+    fn is_visible() -> bool
+        return _visible
+
+    fn set_interactive(val: bool)
+        _interactive = val
+
+    fn add_child_ui(child)
+        child._parent_ui = self
+        _children_ui.append(child)
+
+    fn remove_child_ui(child)
+        var idx = _children_ui.find(child)
+        if idx >= 0:
+            _children_ui.remove(idx)
+            child._parent_ui = null
+
+    fn get_abs_x() -> float
+        if _parent_ui != null:
+            return _parent_ui.get_abs_x() + _x
+        return _x
+
+    fn get_abs_y() -> float
+        if _parent_ui != null:
+            return _parent_ui.get_abs_y() + _y
+        return _y
+
+    fn contains_point(px: float, py: float) -> bool
+        var ax = get_abs_x()
+        var ay = get_abs_y()
+        return px >= ax and px <= ax + _width and py >= ay and py <= ay + _height
+
+    fn set_style(key: string, value)
+        _style[key] = value
+
+    fn get_style(key: string)
+        return _style.get(key, null)
+
+    fn draw_ui(renderer)
+        if not _visible:
+            return
+        _on_draw_ui(renderer)
+        for c in _children_ui:
+            c.draw_ui(renderer)
+
+    fn on_click(x: float, y: float)
+        pass
+
+    fn on_hover(x: float, y: float)
+        pass
+
+    fn _on_draw_ui(renderer)
+        pass

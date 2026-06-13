@@ -1,0 +1,90 @@
+class World:
+    var _entities: array = []
+    var _systems: array = []
+    var _next_id: int = 1
+    var _pending_delete: array = []
+
+    fn init()
+        pass
+
+    fn create_entity() -> Entity
+        var e = Entity.new(_next_id)
+        _next_id += 1
+        _entities.append(e)
+        return e
+
+    fn destroy_entity(entity)
+        _pending_delete.append(entity)
+
+    fn add_system(system)
+        _systems.append(system)
+        _systems.sort(fn(a, b): return a._priority < b._priority)
+
+    fn remove_system(system)
+        var idx = _systems.find(system)
+        if idx >= 0:
+            _systems.remove(idx)
+
+    fn get_entity_count() -> int
+        return len(_entities)
+
+    fn get_entities() -> array
+        return _entities
+
+    fn get_entities_with(comp_type) -> array
+        var result = []
+        for e in _entities:
+            if e._active and e.has_component(comp_type):
+                result.append(e)
+        return result
+
+    fn get_entities_with_tag(tag: string) -> array
+        var result = []
+        for e in _entities:
+            if e._active and e.has_tag(tag):
+                result.append(e)
+        return result
+
+    fn get_entities_with_components(comp_types: array) -> array
+        var result = []
+        for e in _entities:
+            if not e._active:
+                continue
+            var has_all = true
+            for ct in comp_types:
+                if not e.has_component(ct):
+                    has_all = false
+                    break
+            if has_all:
+                result.append(e)
+        return result
+
+    fn find_entity(id: int)
+        for e in _entities:
+            if e.get_id() == id:
+                return e
+        return null
+
+    fn update(dt: float)
+        for sys in _systems:
+            if sys._active:
+                sys.update(self, dt)
+        _flush_deletes()
+
+    fn draw(renderer)
+        for sys in _systems:
+            if sys._active:
+                sys.draw(self, renderer)
+
+    fn _flush_deletes()
+        for e in _pending_delete:
+            var idx = _entities.find(e)
+            if idx >= 0:
+                _entities.remove(idx)
+        _pending_delete = []
+
+    fn clear()
+        _entities = []
+        _systems = []
+        _pending_delete = []
+        _next_id = 1

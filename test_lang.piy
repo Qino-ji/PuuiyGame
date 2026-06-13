@@ -1,0 +1,54 @@
+var x: int = 10
+var y: int = 20
+var name: string = "Puuiy"
+var items: array = [1, 2, 3, 4, 5]
+
+fn add(a, b) -> int:
+    return a + b
+
+fn greet(msg: string) -> string:
+    return "Hello " + msg
+
+fn factorial(n: int) -> int:
+    if n <= 1:
+        return 1
+    return n * factorial(n - 1)
+
+class Animal:
+    fn init(self, name, sound):
+        self.name = name
+        self.sound = sound
+
+    fn speak(self):
+        return self.name + " says " + self.sound
+
+fn main():
+    print(x + y)
+    print(greet(name))
+    print(add(100, 200))
+    print(factorial(5))
+
+    for i in range(5):
+        print("item: " + str(items[i]))
+
+    var cat = Animal.new("Cat", "Meow")
+    print(cat.speak())
+
+    var score: int = 0
+    while score < 5:
+        score += 1
+        print("score: " + str(score))
+
+    var data = {health: 100, mana: 50, speed: 300}
+    print(data.health)
+    print(typeof(data))
+
+    var flag: bool = true
+    if flag:
+        print("flag is on")
+    elif false:
+        print("nope")
+    else:
+        print("else block")
+
+main()

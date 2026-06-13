@@ -1,0 +1,107 @@
+class MovementSystem:
+    extends System
+
+    fn init()
+        _priority = 0
+
+    fn update(world, dt: float)
+        var entities = world.get_entities_with(Velocity)
+        for e in entities:
+            var vel = e.get_component(Velocity)
+            var transform = e.get_component(Transform)
+            if transform != null:
+                transform.move(vel.vx * dt, vel.vy * dt)
+
+class GravitySystem:
+    extends System
+    var _gravity: float = 980.0
+
+    fn init()
+        _priority = -1
+
+    fn update(world, dt: float)
+        var entities = world.get_entities_with(RigidBody)
+        for e in entities:
+            var rb = e.get_component(RigidBody)
+            if rb.is_static:
+                continue
+            var vel = e.get_component(Velocity)
+            if vel != null:
+                vel.vy += _gravity * rb.gravity_scale * dt
+
+class SpriteRenderSystem:
+    extends System
+    var _renderer = null
+
+    fn init(r)
+        _renderer = r
+        _priority = 100
+
+    fn draw(world, renderer)
+        var entities = world.get_entities_with(SpriteRenderer)
+        entities.sort(fn(a, b):
+            var sa = a.get_component(SpriteRenderer)
+            var sb = b.get_component(SpriteRenderer)
+            return sa.z_index < sb.z_index
+        )
+        for e in entities:
+            var sr = e.get_component(SpriteRenderer)
+            var transform = e.get_component(Transform)
+            if transform == null or sr.texture == "":
+                continue
+            renderer.draw_texture(sr.texture, transform.x, transform.y, sr.width, sr.height)
+
+class LifetimeSystem:
+    extends System
+
+    fn init()
+        _priority = 1
+
+    fn update(world, dt: float)
+        var entities = world.get_entities_with(Timer)
+        for e in entities:
+            var timer = e.get_component(Timer)
+            timer.update(dt)
+            if timer.is_done() and not timer.loop:
+                world.destroy_entity(e)
+
+class CollisionSystem:
+    extends System
+    var _callbacks: array = []
+
+    fn init()
+        _priority = 2
+
+    fn on_collision(callback)
+        _callbacks.append(callback)
+
+    fn update(world, dt: float)
+        var entities = world.get_entities_with(Collider)
+        var i = 0
+        while i < len(entities):
+            var a = entities[i]
+            var ca = a.get_component(Collider)
+            var ta = a.get_component(Transform)
+            if ta == null:
+                i += 1
+                continue
+            var j = i + 1
+            while j < len(entities):
+                var b = entities[j]
+                var cb = b.get_component(Collider)
+                var tb = b.get_component(Transform)
+                if tb == null:
+                    j += 1
+                    continue
+                if check_aabb(ta, ca, tb, cb):
+                    for cb_fn in _callbacks:
+                        cb_fn.call_args([a, b])
+                j += 1
+            i += 1
+
+    fn check_aabb(ta, ca, tb, cb) -> bool
+        var ax = ta.x + ca.offset_x
+        var ay = ta.y + ca.offset_y
+        var bx = tb.x + cb.offset_x
+        var by = tb.y + cb.offset_y
+        return ax < bx + cb.width and ax + ca.width > bx and ay < by + cb.height and ay + ca.height > by

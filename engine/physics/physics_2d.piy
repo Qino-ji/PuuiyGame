@@ -1,0 +1,115 @@
+class PhysicsWorld:
+    var _gravity: dict = {x: 0.0, y: 980.0}
+    var _bodies: array = []
+    var _iterations: int = 6
+
+    fn init()
+        pass
+
+    fn set_gravity(gx: float, gy: float)
+        _gravity = {x: gx, y: gy}
+
+    fn get_gravity() -> dict
+        return _gravity
+
+    fn set_iterations(iters: int)
+        _iterations = iters
+
+    fn add_body(body)
+        _bodies.append(body)
+
+    fn remove_body(body)
+        var idx = _bodies.find(body)
+        if idx >= 0:
+            _bodies.remove(idx)
+
+    fn step(dt: float)
+        for b in _bodies:
+            if b._is_static:
+                continue
+            b._velocity_x += _gravity.x * dt
+            b._velocity_y += _gravity.y * dt
+        var iter = 0
+        while iter < _iterations:
+            var i = 0
+            while i < len(_bodies):
+                var a = _bodies[i]
+                var j = i + 1
+                while j < len(_bodies):
+                    var b = _bodies[j]
+                    if a._collides_with(b):
+                        a._resolve_collision(b)
+                    j += 1
+                i += 1
+            iter += 1
+        for b in _bodies:
+            if b._is_static:
+                continue
+            b._x += b._velocity_x * dt
+            b._y += b._velocity_y * dt
+            b._velocity_x = b._velocity_x * (1.0 - b._friction)
+            b._velocity_y = b._velocity_y * (1.0 - b._friction)
+
+class PhysicsBody:
+    var _x: float = 0.0
+    var _y: float = 0.0
+    var _width: float = 32.0
+    var _height: float = 32.0
+    var _velocity_x: float = 0.0
+    var _velocity_y: float = 0.0
+    var _mass: float = 1.0
+    var _is_static: bool = false
+    var _friction: float = 0.05
+    var _restitution: float = 0.0
+
+    fn init(x: float, y: float, w: float, h: float)
+        _x = x
+        _y = y
+        _width = w
+        _height = h
+
+    fn set_static(val: bool)
+        _is_static = val
+
+    fn set_mass(m: float)
+        _mass = m
+
+    fn set_friction(f: float)
+        _friction = f
+
+    fn set_restitution(r: float)
+        _restitution = r
+
+    fn set_velocity(vx: float, vy: float)
+        _velocity_x = vx
+        _velocity_y = vy
+
+    fn get_bounds() -> dict
+        return {x: _x, y: _y, w: _width, h: _height}
+
+    fn _collides_with(other) -> bool
+        return _x < other._x + other._width and _x + _width > other._x and _y < other._y + other._height and _y + _height > other._y
+
+    fn _resolve_collision(other)
+        var overlap_x = 0.0
+        var overlap_y = 0.0
+        var dx = (_x + _width / 2.0) - (other._x + other._width / 2.0)
+        var dy = (_y + _height / 2.0) - (other._y + other._height / 2.0)
+        var half_w = (_width + other._width) / 2.0
+        var half_h = (_height + other._height) / 2.0
+        overlap_x = half_w - abs(dx)
+        overlap_y = half_h - abs(dy)
+        if overlap_x < overlap_y:
+            if dx > 0:
+                _x += overlap_x
+            else:
+                _x -= overlap_x
+            if not _is_static:
+                _velocity_x = -_velocity_x * _restitution
+        else:
+            if dy > 0:
+                _y += overlap_y
+            else:
+                _y -= overlap_y
+            if not _is_static:
+                _velocity_y = -_velocity_y * _restitution

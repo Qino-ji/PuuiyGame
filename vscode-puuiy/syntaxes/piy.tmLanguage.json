@@ -1,0 +1,252 @@
+{
+    "name": "Puuiy",
+    "scopeName": "source.piy",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#keywords" },
+        { "include": "#control-flow" },
+        { "include": "#types" },
+        { "include": "#builtins" },
+        { "include": "#functions" },
+        { "include": "#operators" },
+        { "include": "#numbers" },
+        { "include": "#decorators" },
+        { "include": "#constants" },
+        { "include": "#variables" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.number.sign.piy",
+                    "match": "#.*$"
+                }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.piy",
+                    "begin": "\"",
+                    "end": "\"",
+                    "beginCaptures": {
+                        "0": { "name": "punctuation.definition.string.begin.piy" }
+                    },
+                    "endCaptures": {
+                        "0": { "name": "punctuation.definition.string.end.piy" }
+                    },
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.piy",
+                            "match": "\\\\(n|t|r|\\\\|\\'|\\\"|0)"
+                        }
+                    ]
+                },
+                {
+                    "name": "string.quoted.single.piy",
+                    "begin": "'",
+                    "end": "'",
+                    "beginCaptures": {
+                        "0": { "name": "punctuation.definition.string.begin.piy" }
+                    },
+                    "endCaptures": {
+                        "0": { "name": "punctuation.definition.string.end.piy" }
+                    },
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.piy",
+                            "match": "\\\\(n|t|r|\\\\|\\'|\\\"|0)"
+                        }
+                    ]
+                },
+                {
+                    "name": "string.quoted.triple.piy",
+                    "begin": "'''",
+                    "end": "'''"
+                },
+                {
+                    "name": "string.quoted.triple.piy",
+                    "begin": "\"\"\"",
+                    "end": "\"\"\""
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.import.piy",
+                    "match": "\\b(import|from|as)\\b"
+                },
+                {
+                    "name": "keyword.declaration.piy",
+                    "match": "\\b(var|let|const|fn|func|class|extends|interface|enum)\\b"
+                },
+                {
+                    "name": "keyword.control.piy",
+                    "match": "\\b(if|elif|else|while|for|in|return|pass|break|continue|yield|with|match|when|case|default|import|from|as)\\b"
+                },
+                {
+                    "name": "keyword.operator.logical.piy",
+                    "match": "\\b(and|or|not|is)\\b"
+                },
+                {
+                    "name": "keyword.other.piy",
+                    "match": "\\b(self|true|false|null|none|super|new|extends)\\b"
+                }
+            ]
+        },
+        "control-flow": {
+            "patterns": [
+                {
+                    "name": "keyword.control.loop.piy",
+                    "match": "\\b(while|for|break|continue)\\b"
+                },
+                {
+                    "name": "keyword.control.conditional.piy",
+                    "match": "\\b(if|elif|else|when|match|case|default)\\b"
+                },
+                {
+                    "name": "keyword.control.return.piy",
+                    "match": "\\b(return)\\b"
+                }
+            ]
+        },
+        "types": {
+            "patterns": [
+                {
+                    "name": "support.type.piy",
+                    "match": "\\b(int|float|bool|string|array|dict|void|any|object|fn|func|class|type)\\b"
+                },
+                {
+                    "name": "entity.other.inherited-class.piy",
+                    "match": "\\b(extends)\\s+([A-Z][a-zA-Z0-9_]*)"
+                }
+            ]
+        },
+        "builtins": {
+            "patterns": [
+                {
+                    "name": "support.function.builtin.piy",
+                    "match": "\\b(print|range|len|typeof|str|int|float|bool|array|dict|null|abs|min|max|random|sin|cos|tan|sqrt|floor|ceil|clamp)\\b"
+                },
+                {
+                    "name": "support.function.builtin.piy",
+                    "match": "\\b(append|remove|find|sort|reverse|has|get|keys|values|split|join|trim|upper|lower|replace|contains|startswith|endswith|index|count)\\b"
+                }
+            ]
+        },
+        "functions": {
+            "patterns": [
+                {
+                    "match": "^\\s*(fn|func)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "keyword.declaration.function.piy" },
+                        "2": { "name": "entity.name.function.piy" }
+                    }
+                },
+                {
+                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(\\()",
+                    "captures": {
+                        "1": { "name": "entity.name.function.piy" },
+                        "2": { "name": "punctuation.definition.arguments.begin.piy" }
+                    }
+                }
+            ]
+        },
+        "operators": {
+            "patterns": [
+                {
+                    "name": "keyword.operator.arithmetic.piy",
+                    "match": "\\+|-|\\*|\\/|%|\\*\\*"
+                },
+                {
+                    "name": "keyword.operator.comparison.piy",
+                    "match": "==|!=|<=|>=|<|>"
+                },
+                {
+                    "name": "keyword.operator.assignment.piy",
+                    "match": "\\+=|-=|\\*=|\\/=|%=|="
+                },
+                {
+                    "name": "keyword.operator.logical.piy",
+                    "match": "&&|\\|\\||!"
+                },
+                {
+                    "name": "keyword.operator.member.piy",
+                    "match": "\\."
+                },
+                {
+                    "name": "keyword.operator.range.piy",
+                    "match": "\\.\\."
+                },
+                {
+                    "name": "keyword.operator.lambda.piy",
+                    "match": "=>"
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.float.piy",
+                    "match": "\\b[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?\\b"
+                },
+                {
+                    "name": "constant.numeric.hex.piy",
+                    "match": "\\b0[xX][0-9a-fA-F]+\\b"
+                },
+                {
+                    "name": "constant.numeric.binary.piy",
+                    "match": "\\b0[bB][01]+\\b"
+                },
+                {
+                    "name": "constant.numeric.integer.piy",
+                    "match": "\\b[0-9]+\\b"
+                }
+            ]
+        },
+        "decorators": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.decorator.piy",
+                    "match": "@[a-zA-Z_][a-zA-Z0-9_]*"
+                }
+            ]
+        },
+        "constants": {
+            "patterns": [
+                {
+                    "name": "variable.language.self.piy",
+                    "match": "\\bself\\b"
+                },
+                {
+                    "name": "constant.language.piy",
+                    "match": "\\b(true|false|null|none|true|false)\\b"
+                }
+            ]
+        },
+        "variables": {
+            "patterns": [
+                {
+                    "match": "\\b([A-Z][a-zA-Z0-9_]*)\\b",
+                    "captures": {
+                        "1": { "name": "entity.name.type.class.piy" }
+                    }
+                },
+                {
+                    "match": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\:)",
+                    "captures": {
+                        "1": { "name": "variable.other.piy" }
+                    }
+                },
+                {
+                    "match": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(=)",
+                    "captures": {
+                        "1": { "name": "variable.other.piy" }
+                    }
+                }
+            ]
+        }
+    }
+}

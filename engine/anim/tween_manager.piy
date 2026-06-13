@@ -1,0 +1,73 @@
+class TweenManager:
+    var _tweens: array = []
+
+    fn init()
+        pass
+
+    fn create(target, duration: float, props: dict, easing: string) -> Tween
+        var tween = Tween.new(target, duration, props, easing)
+        tween.play()
+        _tweens.append(tween)
+        return tween
+
+    fn create_x(target, x: float, duration: float, easing: string) -> Tween
+        return create(target, duration, {x: x}, easing)
+
+    fn create_y(target, y: float, duration: float, easing: string) -> Tween
+        return create(target, duration, {y: y}, easing)
+
+    fn create_position(target, x: float, y: float, duration: float, easing: string) -> Tween
+        return create(target, duration, {x: x, y: y}, easing)
+
+    fn create_scale(target, sx: float, sy: float, duration: float, easing: string) -> Tween
+        return create(target, duration, {scaleX: sx, scaleY: sy}, easing)
+
+    fn create_alpha(target, alpha: int, duration: float, easing: string) -> Tween
+        return create(target, duration, {alpha: float(alpha)}, easing)
+
+    fn create_rotation(target, rotation: float, duration: float, easing: string) -> Tween
+        return create(target, duration, {rotation: rotation}, easing)
+
+    fn create_color(target, r: int, g: int, b: int, duration: float, easing: string) -> Tween
+        return create(target, duration, {r: float(r), g: float(g), b: float(b)}, easing)
+
+    fn tween_to(target, duration: float, props: dict) -> Tween
+        return create(target, duration, props, "easeInOutQuad")
+
+    fn tween_bounce(target, duration: float, props: dict) -> Tween
+        return create(target, duration, props, "easeOutBounce")
+
+    fn tween_elastic(target, duration: float, props: dict) -> Tween
+        return create(target, duration, props, "easeOutElastic")
+
+    fn update(dt: float)
+        var i = 0
+        while i < len(_tweens):
+            var tween = _tweens[i]
+            tween.update(dt)
+            if not tween._playing:
+                _tweens.remove(i)
+            else:
+                i += 1
+
+    fn stop_all()
+        for t in _tweens:
+            t.stop()
+        _tweens = []
+
+    fn kill(target)
+        var i = 0
+        while i < len(_tweens):
+            if _tweens[i]._target == target:
+                _tweens.remove(i)
+            else:
+                i += 1
+
+    fn get_active_count() -> int
+        return len(_tweens)
+
+    fn has_tween(target) -> bool
+        for t in _tweens:
+            if t._target == target:
+                return true
+        return false

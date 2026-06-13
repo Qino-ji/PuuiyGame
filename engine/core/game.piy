@@ -1,0 +1,96 @@
+import "engine/core/node.piy"
+import "engine/core/scene.piy"
+import "engine/core/signal.piy"
+
+var _running: bool = false
+var _dt: float = 1.0 / 60.0
+var _elapsed: float = 0.0
+var _fps: int = 60
+var _target_dt: float = 1.0 / 60.0
+var _title: string = "PuuiyGame"
+var _width: int = 800
+var _height: int = 600
+var _scenes: dict = {}
+var _current_scene = null
+var _renderer = null
+var _input = null
+var _audio = null
+
+fn init(title: string, w: int, h: int)
+    _title = title
+    _width = w
+    _height = h
+    _renderer = Renderer.new()
+    _input = InputManager.new()
+    _audio = AudioManager.new()
+    _renderer.init(w, h)
+    _input.init()
+    _audio.init()
+
+fn get_width() -> int
+    return _width
+
+fn get_height() -> int
+    return _height
+
+fn get_title() -> string
+    return _title
+
+fn get_dt() -> float
+    return _dt
+
+fn get_elapsed() -> float
+    return _elapsed
+
+fn get_fps() -> int
+    return _fps
+
+fn set_fps(fps: int)
+    _fps = fps
+    _target_dt = 1.0 / float(fps)
+
+fn get_renderer()
+    return _renderer
+
+fn get_input()
+    return _input
+
+fn get_audio()
+    return _audio
+
+fn add_scene(name: string, scene)
+    _scenes[name] = scene
+
+fn load_scene(name: string)
+    if _current_scene != null:
+        _current_scene.exit()
+    if _scenes.has(name):
+        _current_scene = _scenes[name]
+        _current_scene.enter()
+
+fn get_current_scene()
+    return _current_scene
+
+fn run()
+    _running = true
+    while _running:
+        var frame_start = Time.now()
+        _input.poll()
+        if _current_scene != null:
+            _current_scene.update(_dt)
+        _renderer.clear()
+        if _current_scene != null:
+            _current_scene.draw(_renderer)
+        _renderer.present()
+        _audio.update()
+        _elapsed += _dt
+        var frame_end = Time.now()
+        var elapsed_ms = (frame_end - frame_start) * 1000.0
+        var sleep_ms = (_target_dt * 1000.0) - elapsed_ms
+        if sleep_ms > 0:
+            Time.sleep(sleep_ms / 1000.0)
+
+fn quit()
+    _running = false
+    _audio.cleanup()
+    _renderer.cleanup()

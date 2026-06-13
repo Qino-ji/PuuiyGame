@@ -1,0 +1,15 @@
+{
+    "C_Cpp.files.exclude": {
+        "**/*.i": true
+    },
+    "C_Cpp.exclude": {
+        "**/*.i": true
+    },
+    "files.associations": {
+        "*.i": "swig"
+    },
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/__pycache__": true
+    }
+}

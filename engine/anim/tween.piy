@@ -1,0 +1,153 @@
+class Tween:
+    var _target = null
+    var _properties: dict = {}
+    var _start_values: dict = {}
+    var _end_values: dict = {}
+    var _duration: float = 1.0
+    var _elapsed: float = 0.0
+    var _playing: bool = false
+    var _loop: bool = false
+    var _on_complete = null
+    var _easing: string = "linear"
+
+    fn init(target, duration: float, props: dict, easing: string)
+        _target = target
+        _duration = duration
+        _end_values = props
+        _easing = easing
+        for k in props:
+            _start_values[k] = _get_property(k)
+
+    fn _get_property(key: string)
+        if key == "x":
+            return _target._x
+        elif key == "y":
+            return _target._y
+        elif key == "width":
+            return _target._width
+        elif key == "height":
+            return _target._height
+        elif key == "alpha":
+            return _target._a
+        elif key == "rotation":
+            return _target._rotation
+        elif key == "scaleX":
+            return _target._scale_x
+        elif key == "scaleY":
+            return _target._scale_y
+        elif key == "r":
+            return _target._r
+        elif key == "g":
+            return _target._g
+        elif key == "b":
+            return _target._b
+        return 0.0
+
+    fn _set_property(key: string, val: float)
+        if key == "x":
+            _target._x = val
+        elif key == "y":
+            _target._y = val
+        elif key == "width":
+            _target._width = val
+        elif key == "height":
+            _target._height = val
+        elif key == "alpha":
+            _target._a = int(val)
+        elif key == "rotation":
+            _target._rotation = val
+        elif key == "scaleX":
+            _target._scale_x = val
+        elif key == "scaleY":
+            _target._scale_y = val
+        elif key == "r":
+            _target._r = int(val)
+        elif key == "g":
+            _target._g = int(val)
+        elif key == "b":
+            _target._b = int(val)
+
+    fn play()
+        _elapsed = 0.0
+        _playing = true
+
+    fn stop()
+        _playing = false
+
+    fn is_playing() -> bool
+        return _playing
+
+    fn set_loop(val: bool)
+        _loop = val
+
+    fn set_on_complete(callback)
+        _on_complete = callback
+
+    fn update(dt: float)
+        if not _playing:
+            return
+        _elapsed = _elapsed + dt
+        var t = clamp(_elapsed / _duration, 0.0, 1.0)
+        var eased_t = _apply_easing(t)
+        for k in _end_values:
+            var start_val = _start_values.get(k, 0.0)
+            var end_val = _end_values.get(k, 0.0)
+            var current = start_val + (end_val - start_val) * eased_t
+            _set_property(k, current)
+        if _elapsed >= _duration:
+            if _loop:
+                _elapsed = 0.0
+                for k in _end_values:
+                    _start_values[k] = _get_property(k)
+            else:
+                _playing = false
+                if _on_complete != null:
+                    _on_complete.call()
+
+    fn _apply_easing(t: float) -> float
+        if _easing == "linear":
+            return t
+        elif _easing == "easeInQuad":
+            return t * t
+        elif _easing == "easeOutQuad":
+            return t * (2.0 - t)
+        elif _easing == "easeInOutQuad":
+            if t < 0.5:
+                return 2.0 * t * t
+            else:
+                return -1.0 + (4.0 - 2.0 * t) * t
+        elif _easing == "easeInCubic":
+            return t * t * t
+        elif _easing == "easeOutCubic":
+            var t2 = t - 1.0
+            return t2 * t2 * t2 + 1.0
+        elif _easing == "easeInOutCubic":
+            if t < 0.5:
+                return 4.0 * t * t * t
+            else:
+                var t2 = t - 1.0
+                return 4.0 * t2 * t2 * t2 + 1.0
+        elif _easing == "easeInBack":
+            return t * t * (2.70158 * t - 1.70158)
+        elif _easing == "easeOutBack":
+            var t2 = t - 1.0
+            return t2 * t2 * (2.70158 * t2 + 1.70158) + 1.0
+        elif _easing == "easeOutBounce":
+            if t < 1.0 / 2.75:
+                return 7.5625 * t * t
+            elif t < 2.0 / 2.75:
+                var t2 = t - 1.5 / 2.75
+                return 7.5625 * t2 * t2 + 0.75
+            elif t < 2.5 / 2.75:
+                var t2 = t - 2.25 / 2.75
+                return 7.5625 * t2 * t2 + 0.9375
+            else:
+                var t2 = t - 2.625 / 2.75
+                return 7.5625 * t2 * t2 + 0.984375
+        elif _easing == "easeOutElastic":
+            if t == 0 or t == 1:
+                return t
+            var p = 0.3
+            var s = p / 4.0
+            return pow(2.0, -10.0 * t) * sin((t - s) * (2.0 * 3.14159) / p) + 1.0
+        return t
