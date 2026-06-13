@@ -197,7 +197,12 @@ class Parser:
         self.expect("CLASS")
         name = self.expect("IDENT").value
         parent = None
-        if self.match("LPAREN"):
+        if self.match("COLON"):
+            self.skip_newlines()
+            if self.at("EXTENDS"):
+                self.advance()
+                parent = self.expect("IDENT").value
+        elif self.match("LPAREN"):
             parent = self.parse_expression()
             self.expect("RPAREN")
         body = self.parse_block()

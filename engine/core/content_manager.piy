@@ -1,0 +1,121 @@
+class AssetCache:
+    var _textures: dict = {}
+    var _sounds: dict = {}
+    var _music: dict = {}
+    var _data: dict = {}
+    var _fonts: dict = {}
+
+    fn init()
+        pass
+
+    fn add_texture(name: string, texture_id: int)
+        _textures[name] = texture_id
+
+    fn get_texture(name: string) -> int
+        return _textures.get(name, -1)
+
+    fn add_sound(name: string, sound_id: int)
+        _sounds[name] = sound_id
+
+    fn get_sound(name: string) -> int
+        return _sounds.get(name, -1)
+
+    fn add_music(name: string, music_id: int)
+        _music[name] = music_id
+
+    fn get_music(name: string) -> int
+        return _music.get(name, -1)
+
+    fn add_data(name: string, data: string)
+        _data[name] = data
+
+    fn get_data(name: string) -> string
+        return _data.get(name, "")
+
+    fn add_font(name: string, font_data: dict)
+        _fonts[name] = font_data
+
+    fn get_font(name: string) -> dict
+        return _fonts.get(name, {})
+
+    fn clear()
+        _textures = {}
+        _sounds = {}
+        _music = {}
+        _data = {}
+        _fonts = {}
+
+    fn get_count() -> dict
+        return {
+            textures: len(_textures),
+            sounds: len(_sounds),
+            music: len(_music),
+            data: len(_data),
+            fonts: len(_fonts)
+        }
+
+
+class ContentManager:
+    var _cache: AssetCache
+    var _base_path: string = "assets/"
+    var _renderer = null
+    var _audio = null
+
+    fn init(renderer, audio)
+        _renderer = renderer
+        _audio = audio
+        _cache = AssetCache.new()
+
+    fn set_base_path(path: string)
+        _base_path = path
+
+    fn load_texture(name: string, file: string)
+        var path = _base_path + "textures/" + file
+        var tex_id = _renderer.load_texture(name, path)
+        _cache.add_texture(name, tex_id)
+
+    fn load_sound(name: string, file: string)
+        var path = _base_path + "sounds/" + file
+        var snd = _audio.load_sound(name, path)
+        _cache.add_sound(name, snd)
+
+    fn load_music(name: string, file: string)
+        var path = _base_path + "music/" + file
+        var mus = _audio.load_music(name, path)
+        _cache.add_music(name, mus)
+
+    fn get_texture(name: string) -> string
+        return _cache.get_texture(name)
+
+    fn get_sound(name: string) -> string
+        return _cache.get_sound(name)
+
+    fn get_music(name: string) -> string
+        return _cache.get_music(name)
+
+    fn is_loaded(name: string) -> bool
+        return not (
+            _cache.get_texture(name) == -1 and
+            _cache.get_sound(name) == -1 and
+            _cache.get_music(name) == -1
+        )
+
+    fn cache_all(manifest: dict)
+        if manifest.has(textures):
+            for tex in manifest.textures:
+                load_texture(tex.name, tex.file)
+        if manifest.has(sounds):
+            for snd in manifest.sounds:
+                load_sound(snd.name, snd.file)
+        if manifest.has(music):
+            for mus in manifest.music:
+                load_music(mus.name, mus.file)
+
+    fn get_cache() -> AssetCache
+        return _cache
+
+    fn get_stats() -> dict
+        return _cache.get_count()
+
+    fn cleanup()
+        _cache.clear()

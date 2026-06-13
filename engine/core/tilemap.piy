@@ -1,0 +1,276 @@
+import "engine/core/node.piy"
+import "engine/render/sprite.piy"
+
+class Tile:
+    var _id: int = 0
+    var _texture: string = ""
+    var _solid: bool = false
+    var _properties: dict = {}
+
+    fn init(tile_id: int, texture: string, solid: bool)
+        _id = tile_id
+        _texture = texture
+        _solid = solid
+
+    fn get_id() -> int
+        return _id
+
+    fn get_texture() -> string
+        return _texture
+
+    fn is_solid() -> bool
+        return _solid
+
+    fn set_property(key: string, value)
+        _properties[key] = value
+
+    fn get_property(key: string)
+        return _properties.get(key, null)
+
+
+class Tileset:
+    var _name: string = ""
+    var _tile_width: int = 32
+    var _tile_height: int = 32
+    var _columns: int = 0
+    var _texture: string = ""
+    var _tiles: dict = {}
+    var _first_id: int = 0
+
+    fn init(name: string, texture: string, tw: int, th: int, cols: int, first_id: int)
+        _name = name
+        _texture = texture
+        _tile_width = tw
+        _tile_height = th
+        _columns = cols
+        _first_id = first_id
+
+    fn get_name() -> string
+        return _name
+
+    fn get_tile_width() -> int
+        return _tile_width
+
+    fn get_tile_height() -> int
+        return _tile_height
+
+    fn get_texture() -> string
+        return _texture
+
+    fn add_tile(tile: Tile)
+        _tiles[tile._id] = tile
+
+    fn get_tile(tile_id: int) -> Tile
+        return _tiles.get(tile_id, null)
+
+    fn get_tile_source(tile_id: int) -> dict
+        var local_id = tile_id - _first_id
+        if _columns == 0:
+            return {x: 0, y: 0}
+        var col = local_id % _columns
+        var row = local_id / _columns
+        return {
+            x: float(col) * float(_tile_width),
+            y: float(row) * float(_tile_height),
+            w: float(_tile_width),
+            h: float(_tile_height)
+        }
+
+
+class TileLayer:
+    extends Node
+    var _width: int = 0
+    var _height: int = 0
+    var _tile_width: int = 32
+    var _tile_height: int = 32
+    var _data: array = []
+    var _tileset: Tileset = null
+    var _visible: bool = true
+    var _opacity: float = 1.0
+    var _offset_x: float = 0.0
+    var _offset_y: float = 0.0
+
+    fn init(name: string, w: int, h: int, tw: int, th: int)
+        _name = name
+        _width = w
+        _height = h
+        _tile_width = tw
+        _tile_height = th
+        var i = 0
+        while i < w * h:
+            _data.append(0)
+            i += 1
+
+    fn set_tileset(ts: Tileset)
+        _tileset = ts
+
+    fn get_tileset() -> Tileset
+        return _tileset
+
+    fn get_width() -> int
+        return _width
+
+    fn get_height() -> int
+        return _height
+
+    fn get_tile_width() -> int
+        return _tile_width
+
+    fn get_tile_height() -> int
+        return _tile_height
+
+    fn set_tile(x: int, y: int, tile_id: int)
+        if x >= 0 and x < _width and y >= 0 and y < _height:
+            _data[y * _width + x] = tile_id
+
+    fn get_tile(x: int, y: int) -> int
+        if x >= 0 and x < _width and y >= 0 and y < _height:
+            return _data[y * _width + x]
+        return 0
+
+    fn get_tile_at_pixel(px: float, py: float) -> int
+        var tx = int((px - _offset_x) / float(_tile_width))
+        var ty = int((py - _offset_y) / float(_tile_height))
+        return get_tile(tx, ty)
+
+    fn clear()
+        var i = 0
+        while i < _width * _height:
+            _data[i] = 0
+            i += 1
+
+    fn fill(tile_id: int)
+        var i = 0
+        while i < _width * _height:
+            _data[i] = tile_id
+            i += 1
+
+    fn set_offset(x: float, y: float)
+        _offset_x = x
+        _offset_y = y
+
+    fn set_opacity(op: float)
+        _opacity = clamp(op, 0.0, 1.0)
+
+    fn is_solid_at(x: int, y: int) -> bool
+        var tid = get_tile(x, y)
+        if tid == 0 or _tileset == null:
+            return false
+        var tile = _tileset.get_tile(tid)
+        if tile != null:
+            return tile.is_solid()
+        return false
+
+    fn get_solid_tiles() -> array
+        var result = []
+        var y = 0
+        while y < _height:
+            var x = 0
+            while x < _width:
+                if is_solid_at(x, y):
+                    result.append({x: x, y: y})
+                x += 1
+            y += 1
+        return result
+
+    fn world_to_tile(wx: float, wy: float) -> dict
+        return {
+            x: int((wx - _offset_x) / float(_tile_width)),
+            y: int((wy - _offset_y) / float(_tile_height))
+        }
+
+    fn tile_to_world(tx: int, ty: int) -> dict
+        return {
+            x: float(tx) * float(_tile_width) + _offset_x,
+            y: float(ty) * float(_tile_height) + _offset_y
+        }
+
+    fn _on_draw(renderer)
+        if not _visible or _tileset == null:
+            return
+        var y = 0
+        while y < _height:
+            var x = 0
+            while x < _width:
+                var tid = _data[y * _width + x]
+                if tid != 0:
+                    var src = _tileset.get_tile_source(tid)
+                    var px = float(x) * float(_tile_width) + _offset_x
+                    var py = float(y) * float(_tile_height) + _offset_y
+                    renderer.draw_texture_region(
+                        _tileset.get_texture(),
+                        px, py,
+                        float(_tile_width), float(_tile_height),
+                        src.x, src.y, src.w, src.h
+                    )
+                x += 1
+            y += 1
+
+
+class TileMap:
+    extends Node
+    var _layers: array = []
+    var _tilesets: array = []
+    var _layer_map: dict = {}
+    var _width: int = 0
+    var _height: int = 0
+    var _tile_width: int = 32
+    var _tile_height: int = 32
+
+    fn init(name: string, w: int, h: int, tw: int, th: int)
+        _name = name
+        _width = w
+        _height = h
+        _tile_width = tw
+        _tile_height = th
+
+    fn add_tileset(ts: Tileset)
+        _tilesets.append(ts)
+
+    fn get_tileset(index: int) -> Tileset
+        if index >= 0 and index < len(_tilesets):
+            return _tilesets[index]
+        return null
+
+    fn add_layer(name: string) -> TileLayer
+        var layer = TileLayer.new(name, _width, _height, _tile_width, _tile_height)
+        if len(_tilesets) > 0:
+            layer.set_tileset(_tilesets[0])
+        _layers.append(layer)
+        _layer_map[name] = layer
+        add_child(layer)
+        return layer
+
+    fn get_layer(name: string) -> TileLayer
+        return _layer_map.get(name, null)
+
+    fn get_layer_index(index: int) -> TileLayer
+        if index >= 0 and index < len(_layers):
+            return _layers[index]
+        return null
+
+    fn get_layer_count() -> int
+        return len(_layers)
+
+    fn get_layers() -> array
+        return _layers
+
+    fn set_tileset_for_all(ts: Tileset)
+        for layer in _layers:
+            layer.set_tileset(ts)
+
+    fn collides_with(rect: dict) -> bool
+        for layer in _layers:
+            var tx1 = int(rect.x / float(_tile_width))
+            var ty1 = int(rect.y / float(_tile_height))
+            var tx2 = int((rect.x + rect.w) / float(_tile_width))
+            var ty2 = int((rect.y + rect.h) / float(_tile_height))
+            var ty = ty1
+            while ty <= ty2:
+                var tx = tx1
+                while tx <= tx2:
+                    if layer.is_solid_at(tx, ty):
+                        return true
+                    tx += 1
+                ty += 1
+        return false

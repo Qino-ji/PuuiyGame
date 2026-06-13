@@ -1,0 +1,195 @@
+class NetworkClient:
+    var _host: string = ""
+    var _port: int = 8080
+    var _connected: bool = false
+    var _client_id: int = -1
+    var _outgoing: array = []
+    var _incoming: array = []
+    var _next_message_id: int = 1
+    var _handlers: dict = {}
+
+    fn init(host: string, port: int)
+        _host = host
+        _port = port
+
+    fn connect()
+        _connected = true
+        _client_id = 1
+
+    fn disconnect()
+        _connected = false
+        _client_id = -1
+
+    fn is_connected() -> bool
+        return _connected
+
+    fn get_id() -> int
+        return _client_id
+
+    fn send(message: string)
+        if _connected:
+            var msg = {id: _next_message_id, data: message}
+            _next_message_id += 1
+            _outgoing.append(msg)
+
+    fn receive() -> array
+        var msgs = _incoming
+        _incoming = []
+        return msgs
+
+    fn set_handler(event: string, callback)
+        _handlers[event] = callback
+
+    fn emit(event: string, data: string)
+        if _handlers.has(event):
+            _handlers[event].call_args([data])
+
+    fn update()
+        pass
+
+    fn get_latency() -> float
+        return 0.0
+
+
+class NetworkServer:
+    var _port: int = 8080
+    var _max_clients: int = 10
+    var _clients: array = []
+    var _running: bool = false
+    var _handlers: dict = {}
+    var _next_id: int = 1
+
+    fn init(port: int, max_clients: int)
+        _port = port
+        _max_clients = max_clients
+
+    fn start()
+        _running = true
+
+    fn stop()
+        _running = false
+        _clients = []
+
+    fn is_running() -> bool
+        return _running
+
+    fn set_handler(event: string, callback)
+        _handlers[event] = callback
+
+    fn broadcast(message: string)
+        for client in _clients:
+            client._incoming.append({id: _next_id, data: message, sender: "server"})
+        _next_id += 1
+
+    fn send_to(client_id: int, message: string)
+        for client in _clients:
+            if client._client_id == client_id:
+                client._incoming.append({id: _next_id, data: message, sender: "server"})
+                _next_id += 1
+                return
+
+    fn get_client_count() -> int
+        return len(_clients)
+
+    fn get_clients() -> array
+        return _clients
+
+    fn update()
+        pass
+
+
+class SyncVar:
+    var _name: string = ""
+    var _value = null
+    var _is_dirty: bool = false
+    var _sync_handler = null
+
+    fn init(name: string, initial_value)
+        _name = name
+        _value = initial_value
+
+    fn set(value)
+        if _value != value:
+            _value = value
+            _is_dirty = true
+
+    fn get()
+        return _value
+
+    fn is_dirty() -> bool
+        return _is_dirty
+
+    fn mark_clean()
+        _is_dirty = false
+
+
+class SyncManager:
+    var _vars: dict = {}
+    var _network_target = null
+    var _sync_rate: float = 0.05
+    var _sync_timer: float = 0.0
+
+    fn init(target)
+        _network_target = target
+
+    fn register(name: string, initial_value) -> SyncVar
+        var sv = SyncVar.new(name, initial_value)
+        _vars[name] = sv
+        return sv
+
+    fn get_var(name: string) -> SyncVar
+        return _vars.get(name, null)
+
+    fn update(dt: float)
+        _sync_timer += dt
+        if _sync_timer >= _sync_rate:
+            _sync_timer = 0.0
+            _flush()
+
+    fn _flush()
+        var dirty = []
+        for k in _vars:
+            var sv = _vars[k]
+            if sv.is_dirty():
+                dirty.append({name: k, value: sv.get()})
+                sv.mark_clean()
+        if len(dirty) > 0 and _network_target != null:
+            _network_target.send(str(dirty))
+
+
+class RemoteProcedureCall:
+    var _name: string = ""
+    var _callback = null
+
+    fn init(name: string, callback)
+        _name = name
+        _callback = callback
+
+    fn invoke(args: string)
+        if _callback != null:
+            _callback.call_args([args])
+
+
+class RPCManager:
+    var _rpcs: dict = {}
+    var _network_target = null
+
+    fn init(target)
+        _network_target = target
+
+    fn register(name: string, callback)
+        _rpcs[name] = RemoteProcedureCall.new(name, callback)
+
+    fn call_rpc(name: string, args: string)
+        if _network_target != null:
+            var rpc_msg = {type: "rpc", name: name, args: args}
+            _network_target.send(str(rpc_msg))
+
+    fn handle_message(msg: string)
+        var rpc_msg = str_to_dict(msg)
+        if rpc_msg == null:
+            return
+        if rpc_msg.get(type, "") == "rpc":
+            var name = rpc_msg.get(name, "")
+            if _rpcs.has(name):
+                _rpcs[name].invoke(rpc_msg.get(args, ""))
